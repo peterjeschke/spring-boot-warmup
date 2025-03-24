@@ -1,0 +1,69 @@
+package dev.jeschke.spring.warmup.builder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import dev.jeschke.spring.warmup.Endpoint;
+import dev.jeschke.spring.warmup.WarmUpBuilder;
+import dev.jeschke.spring.warmup.WarmUpSettings;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
+public class WarmUpBuilderImpl implements WarmUpBuilder {
+
+    private final List<Endpoint> endpoints = new ArrayList<>();
+    private boolean enableInternalWarmUpEndpoint = false;
+
+    @Override
+    public WarmUpBuilder addEndpoint(String path) {
+        endpoints.add( new Endpoint( path ) );
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder addEndpoint(String method, String path) {
+        endpoints.add( new Endpoint( method, path ) );
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder addEndpoint(String path, Object payload) {
+        endpoints.add( new Endpoint( path, payload, APPLICATION_JSON.toString() ) );
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder addEndpoint(String path, Object payload, String contentType) {
+        endpoints.add( new Endpoint( path, payload, contentType ) );
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder addEndpoint(String method, String path, Object payload) {
+        endpoints.add( new Endpoint( method, path, payload, APPLICATION_JSON.toString() ) );
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder addEndpoint(String method, String path, Object payload, String contentType) {
+        endpoints.add( new Endpoint( method, path, payload, contentType ) );
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder enableInternalWarmUpEndpoint() {
+        enableInternalWarmUpEndpoint = true;
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder disableInternalWarmUpEndpoint() {
+        enableInternalWarmUpEndpoint = false;
+        return this;
+    }
+
+    @Override
+    public WarmUpSettings build() {
+        return new WarmUpSettings( endpoints, enableInternalWarmUpEndpoint );
+    }
+}
