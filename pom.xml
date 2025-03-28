@@ -49,6 +49,9 @@
         <sonar.organization>peterjeschke</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.projectKey>peterjeschke_spring-boot-warmup</sonar.projectKey>
+        <sonar.java.checkstyle.reportPaths>
+            spring-boot-warmup-core/target/checkstyle-result.xml,spring-boot-warmup-v3/target/checkstyle-result.xml
+        </sonar.java.checkstyle.reportPaths>
 
         <assertj.version>3.27.3</assertj.version>
         <junit-jupiter.version>5.12.1</junit-jupiter.version>
@@ -66,6 +69,7 @@
         <lombok.version>1.18.36</lombok.version>
         <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -169,6 +173,24 @@
                                 <format>XML</format>
                             </formats>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin.version}</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <failOnViolation>false</failOnViolation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
