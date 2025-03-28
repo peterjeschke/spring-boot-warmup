@@ -5,7 +5,7 @@ import dev.jeschke.spring.warmup.WarmUpSettings;
 
 public interface WarmUpInitializer {
 
-    default WarmUpBuilder loadComponents(final WarmUpBuilder builder) {
+    default WarmUpBuilder configure(final WarmUpBuilder builder) {
         return builder;
     }
 

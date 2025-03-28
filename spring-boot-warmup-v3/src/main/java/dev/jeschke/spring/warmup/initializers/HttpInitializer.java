@@ -46,7 +46,7 @@ public class HttpInitializer implements WarmUpInitializer {
     private final ServletWebServerApplicationContext webServerContext;
 
     @Override
-    public WarmUpBuilder loadComponents(final WarmUpBuilder builder) {
+    public WarmUpBuilder configure(final WarmUpBuilder builder) {
         applicationContext.getBeansOfType(RequestMappingHandlerMapping.class).values().stream()
                 .map(RequestMappingHandlerMapping::getHandlerMethods)
                 .map(Map::entrySet)

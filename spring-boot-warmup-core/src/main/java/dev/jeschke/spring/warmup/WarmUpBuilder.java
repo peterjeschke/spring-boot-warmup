@@ -2,6 +2,8 @@ package dev.jeschke.spring.warmup;
 
 public interface WarmUpBuilder {
 
+    WarmUpBuilder addEndpoint(Endpoint endpoint);
+
     WarmUpBuilder addEndpoint(String path);
 
     WarmUpBuilder addEndpoint(String method, String path);

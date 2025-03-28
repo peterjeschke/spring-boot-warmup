@@ -1,5 +1,8 @@
 package dev.jeschke.spring.warmup.initializers;
 
+import static java.time.OffsetDateTime.MAX;
+import static java.time.OffsetDateTime.MIN;
+
 import jakarta.validation.constraints.AssertFalse;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
@@ -49,10 +52,10 @@ public class InternalEndpointPayload {
                 .alwaysFalse(false)
                 .digits(BigDecimal.TEN)
                 .email("foo@bar.com")
-                .future(OffsetDateTime.MAX)
-                .futureOrPresent(OffsetDateTime.MAX)
-                .past(OffsetDateTime.MIN)
-                .pastOrPresent(OffsetDateTime.MIN)
+                .future(MAX)
+                .futureOrPresent(MAX)
+                .past(MIN)
+                .pastOrPresent(MIN)
                 .pattern("abc")
                 .size(List.of("a", "b"))
                 .build();

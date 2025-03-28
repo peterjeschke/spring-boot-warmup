@@ -14,6 +14,12 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private boolean enableInternalWarmUpEndpoint = false;
 
     @Override
+    public WarmUpBuilder addEndpoint(Endpoint endpoint) {
+        endpoints.add(endpoint);
+        return this;
+    }
+
+    @Override
     public WarmUpBuilder addEndpoint(String path) {
         endpoints.add(new Endpoint(path));
         return this;

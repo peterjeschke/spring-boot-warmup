@@ -23,7 +23,7 @@ public class WarmUpRunner {
     public void onContextRefreshed(final ContextRefreshedEvent event) {
         var builder = configureCustomizers(event.getApplicationContext());
         for (final var initializer : initializers) {
-            builder = initializer.loadComponents(builder);
+            builder = initializer.configure(builder);
         }
         final var configuration = builder.build();
         initializers.forEach(initializer -> initializer.warmUp(configuration));

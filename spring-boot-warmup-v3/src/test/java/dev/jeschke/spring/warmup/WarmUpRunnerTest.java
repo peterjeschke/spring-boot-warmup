@@ -58,8 +58,8 @@ class WarmUpRunnerTest {
                 .thenReturn(new TreeMap<>(Map.of("customizer1", customizer1, "customizer2", customizer2)));
         when(customizer1.apply(any())).thenAnswer(returnsFirstArg());
         when(customizer2.apply(any())).thenAnswer(returnsFirstArg());
-        when(initializer1.loadComponents(any())).thenAnswer(returnsFirstArg());
-        when(initializer2.loadComponents(any())).thenAnswer(returnsFirstArg());
+        when(initializer1.configure(any())).thenAnswer(returnsFirstArg());
+        when(initializer2.configure(any())).thenAnswer(returnsFirstArg());
     }
 
     @Test
@@ -69,8 +69,8 @@ class WarmUpRunnerTest {
         InOrder inOrder = inOrder(customizer1, customizer2, initializer1, initializer2);
         inOrder.verify(customizer1).apply(builder.capture());
         inOrder.verify(customizer2).apply(builder.capture());
-        inOrder.verify(initializer1).loadComponents(builder.capture());
-        inOrder.verify(initializer2).loadComponents(builder.capture());
+        inOrder.verify(initializer1).configure(builder.capture());
+        inOrder.verify(initializer2).configure(builder.capture());
         inOrder.verify(initializer1).warmUp(settings.capture());
         inOrder.verify(initializer2).warmUp(settings.capture());
 
