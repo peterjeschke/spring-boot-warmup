@@ -14,43 +14,44 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private boolean enableInternalWarmUpEndpoint = false;
 
     @Override
-    public WarmUpBuilder addEndpoint(Endpoint endpoint) {
+    public WarmUpBuilder addEndpoint(final Endpoint endpoint) {
         endpoints.add(endpoint);
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(String path) {
+    public WarmUpBuilder addEndpoint(final String path) {
         endpoints.add(new Endpoint(path));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(String method, String path) {
+    public WarmUpBuilder addEndpoint(final String method, final String path) {
         endpoints.add(new Endpoint(method, path));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(String path, Object payload) {
+    public WarmUpBuilder addEndpoint(final String path, final Object payload) {
         endpoints.add(new Endpoint(path, payload, APPLICATION_JSON.toString()));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(String path, Object payload, String contentType) {
+    public WarmUpBuilder addEndpoint(final String path, final Object payload, final String contentType) {
         endpoints.add(new Endpoint(path, payload, contentType));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(String method, String path, Object payload) {
+    public WarmUpBuilder addEndpoint(final String method, final String path, final Object payload) {
         endpoints.add(new Endpoint(method, path, payload, APPLICATION_JSON.toString()));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(String method, String path, Object payload, String contentType) {
+    public WarmUpBuilder addEndpoint(
+            final String method, final String path, final Object payload, final String contentType) {
         endpoints.add(new Endpoint(method, path, payload, contentType));
         return this;
     }
