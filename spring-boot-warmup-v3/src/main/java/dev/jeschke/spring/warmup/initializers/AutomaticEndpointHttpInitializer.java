@@ -1,6 +1,6 @@
 package dev.jeschke.spring.warmup.initializers;
 
-import static dev.jeschke.spring.warmup.initializers.InternalEndpoint.INTERNAL_WARM_UP_ENDPOINT;
+import static dev.jeschke.spring.warmup.initializers.AutomaticEndpoint.AUTOMATIC_WARM_UP_ENDPOINT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import dev.jeschke.spring.warmup.WarmUpSettings;
@@ -15,8 +15,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InternalEndpointHttpInitializer implements WarmUpInitializer {
+public class AutomaticEndpointHttpInitializer implements WarmUpInitializer {
 
+    public static final String CONTROLLER_BEAN_NAME = "warmUpAutomaticEndpoint";
     private final ServletWebServerApplicationContext context;
 
     @Name("warmUpRestClient")
@@ -24,16 +25,16 @@ public class InternalEndpointHttpInitializer implements WarmUpInitializer {
 
     @Override
     public void warmUp(final WarmUpSettings settings) {
-        if (!settings.useInternalEndpoint()) {
+        if (!settings.enableAutomaticMvcEndpoint()) {
             return;
         }
 
-        context.registerBean("warmUpInternalEndpoint", InternalEndpoint.class);
+        context.registerBean(CONTROLLER_BEAN_NAME, AutomaticEndpoint.class);
         reloadControllers();
 
-        callInternalEndpoint();
+        callAutomaticEndpoint();
 
-        context.removeBeanDefinition("warmUpInternalEndpoint");
+        context.removeBeanDefinition(CONTROLLER_BEAN_NAME);
         reloadControllers();
     }
 
@@ -47,19 +48,19 @@ public class InternalEndpointHttpInitializer implements WarmUpInitializer {
         });
     }
 
-    private void callInternalEndpoint() {
+    private void callAutomaticEndpoint() {
         final var port = context.getWebServer().getPort();
-        final var url = "http://localhost:%s/%s".formatted(port, INTERNAL_WARM_UP_ENDPOINT);
+        final var url = "http://localhost:%s/%s".formatted(port, AUTOMATIC_WARM_UP_ENDPOINT);
         final var response = restClient
                 .post()
                 .uri(url)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .body(InternalEndpointPayload.createDefault())
+                .body(AutomaticEndpointRequestBody.createDefault())
                 .retrieve()
                 .toBodilessEntity();
         if (!response.getStatusCode().is2xxSuccessful()) {
-            log.warn("Warming up internal endpoint was not successful. Status code: {}", response.getStatusCode());
+            log.warn("Warming up automatic endpoint was not successful. Status code: {}", response.getStatusCode());
         }
     }
 }

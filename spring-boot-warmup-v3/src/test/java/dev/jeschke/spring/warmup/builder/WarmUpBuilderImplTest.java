@@ -37,21 +37,23 @@ class WarmUpBuilderImplTest {
     }
 
     private static Stream<Arguments> endpointArguments() {
-        final Object payload = "payload";
+        final Object requestBody = "body";
         return Stream.of(
                 args(b -> b.addEndpoint(new Endpoint("path")), new Endpoint("path")),
                 args(b -> b.addEndpoint("path"), new Endpoint("path")),
                 args(b -> b.addEndpoint("POST", "path"), new Endpoint("POST", "path")),
-                args(b -> b.addEndpoint("path", payload), new Endpoint("path", payload, APPLICATION_JSON_VALUE)),
                 args(
-                        b -> b.addEndpoint("path", payload, APPLICATION_XML_VALUE),
-                        new Endpoint("path", payload, APPLICATION_XML_VALUE)),
+                        b -> b.addEndpoint("path", requestBody),
+                        new Endpoint("path", requestBody, APPLICATION_JSON_VALUE)),
                 args(
-                        b -> b.addEndpoint("PUT", "path", payload),
-                        new Endpoint("PUT", "path", payload, APPLICATION_JSON_VALUE)),
+                        b -> b.addEndpoint("path", requestBody, APPLICATION_XML_VALUE),
+                        new Endpoint("path", requestBody, APPLICATION_XML_VALUE)),
                 args(
-                        b -> b.addEndpoint("PUT", "path", payload, APPLICATION_XML_VALUE),
-                        new Endpoint("PUT", "path", payload, APPLICATION_XML_VALUE)));
+                        b -> b.addEndpoint("PUT", "path", requestBody),
+                        new Endpoint("PUT", "path", requestBody, APPLICATION_JSON_VALUE)),
+                args(
+                        b -> b.addEndpoint("PUT", "path", requestBody, APPLICATION_XML_VALUE),
+                        new Endpoint("PUT", "path", requestBody, APPLICATION_XML_VALUE)));
     }
 
     private static Arguments args(UnaryOperator<WarmUpBuilder> method, final Endpoint expectedEndpoint) {
@@ -59,25 +61,48 @@ class WarmUpBuilderImplTest {
     }
 
     @Test
-    void internalWarmUpEndpoint_default() {
+    void automaticWarmUpEndpoint_default() {
         final var actual = builder.build();
 
-        assertThat(actual.useInternalEndpoint()).isFalse();
+        assertThat(actual.enableAutomaticMvcEndpoint()).isFalse();
     }
 
     @Test
-    void enableIternalWarmUpEndpoint() {
-        final var actual = builder.enableInternalWarmUpEndpoint().build();
+    void enableAutomaticMvcWarmUpEndpoint() {
+        final var actual = builder.enableAutomaticMvcWarmUpEndpoint().build();
 
-        assertThat(actual.useInternalEndpoint()).isTrue();
+        assertThat(actual.enableAutomaticMvcEndpoint()).isTrue();
     }
 
     @Test
-    void disableInternalWarmUpEndpoint() {
-        final var actual = builder.enableInternalWarmUpEndpoint()
-                .disableInternalWarmUpEndpoint()
+    void disableAutomaticMvcWarmUpEndpoint() {
+        final var actual = builder.enableAutomaticMvcWarmUpEndpoint()
+                .disableAutomaticMvcWarmUpEndpoint()
                 .build();
 
-        assertThat(actual.useInternalEndpoint()).isFalse();
+        assertThat(actual.enableAutomaticMvcEndpoint()).isFalse();
+    }
+
+    @Test
+    void readinessIndicator_default() {
+        final var actual = builder.build();
+
+        assertThat(actual.enableReadinessIndicator()).isTrue();
+    }
+
+    @Test
+    void enableReadinessIndicator() {
+        final var actual = builder.disableAutomaticMvcWarmUpEndpoint()
+                .enableReadinessIndicator()
+                .build();
+
+        assertThat(actual.enableReadinessIndicator()).isTrue();
+    }
+
+    @Test
+    void disableReadinessIndicator() {
+        final var actual = builder.disableReadinessIndicator().build();
+
+        assertThat(actual.enableReadinessIndicator()).isFalse();
     }
 }

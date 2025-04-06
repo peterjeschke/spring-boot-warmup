@@ -14,14 +14,20 @@ import org.springframework.stereotype.Component;
 public class WarmUpReadinessIndicator extends ReadinessStateHealthIndicator {
 
     private final WarmUpRunner warmUpRunner;
+    private final WarmUpSettingsFactory settingsFactory;
 
-    public WarmUpReadinessIndicator(final ApplicationAvailability availability, final WarmUpRunner warmUpRunner) {
+    public WarmUpReadinessIndicator(
+            final ApplicationAvailability availability,
+            final WarmUpRunner warmUpRunner,
+            final WarmUpSettingsFactory settingsFactory) {
         super(availability);
         this.warmUpRunner = warmUpRunner;
+        this.settingsFactory = settingsFactory;
     }
 
     @Override
     protected AvailabilityState getState(final ApplicationAvailability applicationAvailability) {
-        return warmUpRunner.isWarmedUp() ? ACCEPTING_TRAFFIC : REFUSING_TRAFFIC;
+        final var settings = settingsFactory.getSettings();
+        return !warmUpRunner.isWarmedUp() && settings.enableReadinessIndicator() ? REFUSING_TRAFFIC : ACCEPTING_TRAFFIC;
     }
 }

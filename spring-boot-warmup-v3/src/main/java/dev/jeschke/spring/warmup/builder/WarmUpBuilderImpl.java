@@ -11,7 +11,8 @@ import java.util.List;
 public class WarmUpBuilderImpl implements WarmUpBuilder {
 
     private final List<Endpoint> endpoints = new ArrayList<>();
-    private boolean enableInternalWarmUpEndpoint = false;
+    private boolean enableAutomaticWarmUpEndpoint = false;
+    private boolean enableReadinessIndicator = true;
 
     @Override
     public WarmUpBuilder addEndpoint(final Endpoint endpoint) {
@@ -32,44 +33,56 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(final String path, final Object payload) {
-        endpoints.add(new Endpoint(path, payload, APPLICATION_JSON.toString()));
+    public WarmUpBuilder addEndpoint(final String path, final Object requestBody) {
+        endpoints.add(new Endpoint(path, requestBody, APPLICATION_JSON.toString()));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(final String path, final Object payload, final String contentType) {
-        endpoints.add(new Endpoint(path, payload, contentType));
+    public WarmUpBuilder addEndpoint(final String path, final Object requestBody, final String contentType) {
+        endpoints.add(new Endpoint(path, requestBody, contentType));
         return this;
     }
 
     @Override
-    public WarmUpBuilder addEndpoint(final String method, final String path, final Object payload) {
-        endpoints.add(new Endpoint(method, path, payload, APPLICATION_JSON.toString()));
+    public WarmUpBuilder addEndpoint(final String method, final String path, final Object requestBody) {
+        endpoints.add(new Endpoint(method, path, requestBody, APPLICATION_JSON.toString()));
         return this;
     }
 
     @Override
     public WarmUpBuilder addEndpoint(
-            final String method, final String path, final Object payload, final String contentType) {
-        endpoints.add(new Endpoint(method, path, payload, contentType));
+            final String method, final String path, final Object requestBody, final String contentType) {
+        endpoints.add(new Endpoint(method, path, requestBody, contentType));
         return this;
     }
 
     @Override
-    public WarmUpBuilder enableInternalWarmUpEndpoint() {
-        enableInternalWarmUpEndpoint = true;
+    public WarmUpBuilder enableAutomaticMvcWarmUpEndpoint() {
+        enableAutomaticWarmUpEndpoint = true;
         return this;
     }
 
     @Override
-    public WarmUpBuilder disableInternalWarmUpEndpoint() {
-        enableInternalWarmUpEndpoint = false;
+    public WarmUpBuilder disableAutomaticMvcWarmUpEndpoint() {
+        enableAutomaticWarmUpEndpoint = false;
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder enableReadinessIndicator() {
+        enableReadinessIndicator = true;
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder disableReadinessIndicator() {
+        enableReadinessIndicator = false;
         return this;
     }
 
     @Override
     public WarmUpSettings build() {
-        return new WarmUpSettings(endpoints, enableInternalWarmUpEndpoint);
+        return new WarmUpSettings(endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator);
     }
 }

@@ -3,6 +3,7 @@ package dev.jeschke.spring.warmup.application;
 import org.springframework.stereotype.Component;
 
 @Component
+@SuppressWarnings("unused")
 public class TestMock {
 
     public void getNoParams() {}
@@ -13,9 +14,9 @@ public class TestMock {
 
     public void getByCustomizer() {}
 
-    public void postByCustomizer(final TestPayload payload) {}
+    public void postByCustomizer(final TestRequestBody body) {}
 
-    public void postWithAnnotationPayload(final TestPayload payload) {}
+    public void postWithAnnotationRequestBody(final TestRequestBody body) {}
 
-    public void postWithRequestBodyPayload(final TestPayload payload) {}
+    public void postWithRequestBodyParameter(final TestRequestBody body) {}
 }

@@ -2,4 +2,8 @@ package dev.jeschke.spring.warmup;
 
 import java.util.Collection;
 
-public record WarmUpSettings(Collection<Endpoint> endpoints, boolean useInternalEndpoint) {}
+/**
+ * For internal use only.
+ */
+public record WarmUpSettings(
+        Collection<Endpoint> endpoints, boolean enableAutomaticMvcEndpoint, boolean enableReadinessIndicator) {}

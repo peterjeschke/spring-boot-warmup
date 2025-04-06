@@ -1,6 +1,7 @@
 package dev.jeschke.spring.warmup;
 
-import static dev.jeschke.spring.warmup.application.TestApplication.CUSTOMIZER_TEST_PAYLOAD;
+import static dev.jeschke.spring.warmup.application.TestApplication.CUSTOMIZER_TEST_REQUEST_BODY;
+import static dev.jeschke.spring.warmup.initializers.AutomaticEndpoint.AUTOMATIC_WARM_UP_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.assertArg;
@@ -9,10 +10,10 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.context.bean.override.mockito.MockReset.NONE;
 
-import dev.jeschke.spring.warmup.application.InitializedTestPayload;
+import dev.jeschke.spring.warmup.application.InitializedTestRequestBody;
 import dev.jeschke.spring.warmup.application.TestApplication;
 import dev.jeschke.spring.warmup.application.TestMock;
-import dev.jeschke.spring.warmup.application.TestPayload;
+import dev.jeschke.spring.warmup.application.TestRequestBody;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -42,7 +44,7 @@ class ControllerWarmUpAnnotationTest {
     private HealthEndpoint healthEndpoint;
 
     @Autowired
-    private InternalEndpointCheckFilter filter;
+    private AutomaticEndpointCheckFilter filter;
 
     @BeforeEach
     void setUp() {
@@ -72,17 +74,17 @@ class ControllerWarmUpAnnotationTest {
 
     @Test
     void postByCustomizer() {
-        verify(testMock).postByCustomizer(customizerTestPayload());
+        verify(testMock).postByCustomizer(customizerTestRequestBody());
     }
 
     @Test
-    void postWithAnnotationPayload() {
-        verify(testMock).postWithAnnotationPayload(initializedTestPayload());
+    void postWithAnnotationRequestBody() {
+        verify(testMock).postWithAnnotationRequestBody(initializedTestRequestBody());
     }
 
     @Test
-    void postWithRequestBodyPayload() {
-        verify(testMock).postWithRequestBodyPayload(initializedTestPayload());
+    void postWithRequestBodyRequestBody() {
+        verify(testMock).postWithRequestBodyParameter(initializedTestRequestBody());
     }
 
     @Test
@@ -91,34 +93,34 @@ class ControllerWarmUpAnnotationTest {
     }
 
     @Test
-    void internalWarmUpEndpoint() {
-        assertThat(filter.isHitInternalEndpoint()).isTrue();
+    void automaticWarmUpEndpoint() {
+        assertThat(filter.isHitAutomaticEndpoint()).isTrue();
     }
 
-    private TestPayload customizerTestPayload() {
-        return assertArg(testPayload -> {
-            assertThat(testPayload).usingRecursiveComparison().isEqualTo(CUSTOMIZER_TEST_PAYLOAD);
-        });
+    private TestRequestBody customizerTestRequestBody() {
+        return assertArg(
+                testBody -> assertThat(testBody).usingRecursiveComparison().isEqualTo(CUSTOMIZER_TEST_REQUEST_BODY));
     }
 
-    private TestPayload initializedTestPayload() {
-        return assertArg(testPayload -> {
-            assertThat(testPayload).usingRecursiveComparison().isEqualTo(new InitializedTestPayload());
-        });
+    private TestRequestBody initializedTestRequestBody() {
+        return assertArg(testRequestBody ->
+                assertThat(testRequestBody).usingRecursiveComparison().isEqualTo(new InitializedTestRequestBody()));
     }
 
     @Getter
     @Component
-    static class InternalEndpointCheckFilter extends OncePerRequestFilter {
+    static class AutomaticEndpointCheckFilter extends OncePerRequestFilter {
 
-        private boolean hitInternalEndpoint = false;
+        private boolean hitAutomaticEndpoint = false;
 
         @Override
         protected void doFilterInternal(
-                final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain)
+                final HttpServletRequest request,
+                @NonNull final HttpServletResponse response,
+                @NonNull final FilterChain filterChain)
                 throws ServletException, IOException {
-            if (request.getRequestURI().contains("internalWarmUpEndpoint")) {
-                hitInternalEndpoint = true;
+            if (request.getRequestURI().contains(AUTOMATIC_WARM_UP_ENDPOINT)) {
+                hitAutomaticEndpoint = true;
             }
 
             filterChain.doFilter(request, response);

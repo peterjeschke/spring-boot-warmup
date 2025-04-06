@@ -37,9 +37,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InternalEndpointPayload {
-    public static InternalEndpointPayload createDefault() {
-        return InternalEndpointPayload.builder()
+public class AutomaticEndpointRequestBody {
+    public static AutomaticEndpointRequestBody createDefault() {
+        return AutomaticEndpointRequestBody.builder()
                 .notEmpty("notEmpty")
                 .notBlank("notBlank")
                 .number(BigInteger.TEN)

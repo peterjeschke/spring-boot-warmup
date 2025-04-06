@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @Import(WarmUpConfiguration.class)
 public class TestApplication {
-    public static final TestPayload CUSTOMIZER_TEST_PAYLOAD = new TestPayload("customizerTestPayload");
+    public static final TestRequestBody CUSTOMIZER_TEST_REQUEST_BODY = new TestRequestBody("customizerTestRequestBody");
 
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);
@@ -33,8 +33,9 @@ public class TestApplication {
         @Bean
         public WarmUpCustomizer warmUpCustomizer() {
             return builder -> builder.addEndpoint("/getByCustomizer")
-                    .addEndpoint(POST.name(), "/postByCustomizer", CUSTOMIZER_TEST_PAYLOAD, APPLICATION_JSON.toString())
-                    .enableInternalWarmUpEndpoint();
+                    .addEndpoint(
+                            POST.name(), "/postByCustomizer", CUSTOMIZER_TEST_REQUEST_BODY, APPLICATION_JSON.toString())
+                    .enableAutomaticMvcWarmUpEndpoint();
         }
     }
 
@@ -73,23 +74,23 @@ public class TestApplication {
         }
 
         @PostMapping("/postByCustomizer")
-        public String postByCustomizer(@RequestBody final TestPayload payload) {
-            testMock.postByCustomizer(payload);
+        public String postByCustomizer(@RequestBody final TestRequestBody requestBody) {
+            testMock.postByCustomizer(requestBody);
             return "postByCustomizer";
         }
 
-        @ControllerWarmUp(payload = InitializedTestPayload.class)
-        @PostMapping("/postWithAnnotationPayload")
-        public String postWithAnnotationPayload(@RequestBody final TestPayload payload) {
-            testMock.postWithAnnotationPayload(payload);
-            return "postWithAnnotationPayload";
+        @ControllerWarmUp(requestBody = InitializedTestRequestBody.class)
+        @PostMapping("/postWithAnnotationRequestBody")
+        public String postWithAnnotationRequestBody(@RequestBody final TestRequestBody requestBody) {
+            testMock.postWithAnnotationRequestBody(requestBody);
+            return "postWithAnnotationRequestBody";
         }
 
         @ControllerWarmUp
-        @PostMapping("/postWithRequestBodyPayload")
-        public String postWithRequestBodyPayload(@RequestBody final InitializedTestPayload payload) {
-            testMock.postWithRequestBodyPayload(payload);
-            return "postWithRequestBodyPayload";
+        @PostMapping("/postWithRequestBodyParameter")
+        public String postWithRequestBodyParameter(@RequestBody final InitializedTestRequestBody requestBody) {
+            testMock.postWithRequestBodyParameter(requestBody);
+            return "postWithRequestBodyParameter";
         }
     }
 

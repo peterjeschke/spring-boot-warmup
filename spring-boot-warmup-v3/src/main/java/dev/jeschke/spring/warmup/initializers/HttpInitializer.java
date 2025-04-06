@@ -6,7 +6,7 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
 import dev.jeschke.spring.warmup.ControllerWarmUp;
-import dev.jeschke.spring.warmup.ControllerWarmUp.DefaultPayloadType;
+import dev.jeschke.spring.warmup.ControllerWarmUp.DefaultRequestBodyType;
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
 import dev.jeschke.spring.warmup.WarmUpSettings;
@@ -73,7 +73,7 @@ public class HttpInitializer implements WarmUpInitializer {
                 .stream() //
                 .findAny();
         final var path = requestMappingInfo.getDirectPaths().stream().findAny();
-        final var payload = getPayload(handlerMethod);
+        final var requestBody = getRequestBody(handlerMethod);
 
         if (requestMethod.isEmpty() || path.isEmpty()) {
             log.warn(
@@ -83,18 +83,18 @@ public class HttpInitializer implements WarmUpInitializer {
                     path);
             return;
         }
-        builder.addEndpoint(requestMethod.get().toString(), path.get(), payload);
+        builder.addEndpoint(requestMethod.get().toString(), path.get(), requestBody);
     }
 
-    private Object getPayload(final HandlerMethod handlerMethod) {
+    private Object getRequestBody(final HandlerMethod handlerMethod) {
         final var methodAnnotation = requireNonNull(
                 handlerMethod.getMethodAnnotation(ControllerWarmUp.class),
                 () -> "The handler method %s should have a @ControllerWarmUp annotation"
                         .formatted(handlerMethod.getMethod().getName()));
 
-        // First: Try a payload configured with the annotation
-        final var configuredType = Optional.<Class<?>>ofNullable(methodAnnotation.payload())
-                .filter(clazz -> !clazz.isAssignableFrom(DefaultPayloadType.class));
+        // First: Try a body configured with the annotation
+        final var configuredType = Optional.<Class<?>>ofNullable(methodAnnotation.requestBody())
+                .filter(clazz -> !clazz.isAssignableFrom(DefaultRequestBodyType.class));
         // Second: Try to find a @RequestBody parameter
         final var annotatedParameterType = configuredType.or(() -> findParameterTypeByAnnotation(handlerMethod));
 
@@ -120,7 +120,7 @@ public class HttpInitializer implements WarmUpInitializer {
             return Optional.of(constructor.newInstance());
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             log.error(
-                    "Failed to instantiate payload with constructor {}. Will call the endpoint without payload.",
+                    "Failed to instantiate body with constructor {}. Will call the endpoint without body.",
                     constructor,
                     e);
             return Optional.empty();
@@ -135,13 +135,13 @@ public class HttpInitializer implements WarmUpInitializer {
         var spec = restClient //
                 .method(method) //
                 .uri(url);
-        if (endpoint.payload() != null) {
+        if (endpoint.body() != null) {
             spec = spec //
                     .contentType(MediaType.valueOf(endpoint.contentType())) //
-                    .body(endpoint.payload());
-        } else if (expectPayload(method)) {
+                    .body(endpoint.body());
+        } else if (expectRequestBody(method)) {
             log.warn(
-                    "Trying to call endpoint {} with method {} but no payload was provided. Call might fail.",
+                    "Trying to call endpoint {} with method {} but no body was provided. Call might fail.",
                     endpoint,
                     method);
         }
@@ -155,7 +155,7 @@ public class HttpInitializer implements WarmUpInitializer {
         }
     }
 
-    private boolean expectPayload(final HttpMethod httpMethod) {
+    private boolean expectRequestBody(final HttpMethod httpMethod) {
         return List.of(POST, PUT, PATCH).contains(httpMethod);
     }
 }

@@ -10,15 +10,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @IgnoreBean // Don't auto-discover this bean. It will be registered manually, if necessary
 @RestController
-public class InternalEndpoint {
+public class AutomaticEndpoint {
 
-    public static final String INTERNAL_WARM_UP_ENDPOINT = "/internalWarmUpEndpoint";
+    public static final String AUTOMATIC_WARM_UP_ENDPOINT = "/automaticWarmUpEndpoint";
 
     @PostMapping(
-            value = INTERNAL_WARM_UP_ENDPOINT,
+            value = AUTOMATIC_WARM_UP_ENDPOINT,
             consumes = APPLICATION_JSON_VALUE,
             produces = APPLICATION_JSON_VALUE)
-    public InternalEndpointPayload warmUp(@RequestBody @Validated final InternalEndpointPayload payload) {
-        return payload;
+    public AutomaticEndpointRequestBody warmUp(@RequestBody @Validated final AutomaticEndpointRequestBody requestBody) {
+        return requestBody;
     }
 }
