@@ -41,7 +41,6 @@
     </scm>
 
     <properties>
-        <revision>1.0.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <sonar.organization>peterjeschke</sonar.organization>
