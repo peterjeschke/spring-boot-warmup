@@ -35,10 +35,13 @@ This has the possibility to cause side effects, like sending requests to other s
 To make sure that a load balancer does not route traffic to an instance before it is ready, the readiness indicator will
 set the health of this service as `OUT_OF_SERVICE` until all WarmUp steps are done.
 
-All WarmUp steps run _after_* context initialization is done.
+All WarmUp steps run _after_ context initialization is done.
 Without the readiness indicator, the health feature of the Spring Boot actuator will report the service as UP, even
 before all WarmUp steps are done.
 
+**Note**: "After context initialization" means that WarmUp will run asynchronously after Spring emits a
+`ContextRefreshedEvent`.
+If the WarmUp were run synchronously, Spring would only report as "finished" after the event handler is done.
 **Note**: This feature is enabled by default.
 
 #### Examples
