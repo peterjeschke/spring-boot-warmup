@@ -19,6 +19,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LATEST_TAG="$(git describe --tags --abbrev=0)"
-          if [ ! $(gh release view "$LATEST_TAG" > /dev/null 2>&1) ] ; then
+          if ! $(gh release view "$LATEST_TAG" > /dev/null 2>&1) ; then
             gh release create "$LATEST_TAG" --fail-on-no-commits --generate-notes
           fi
