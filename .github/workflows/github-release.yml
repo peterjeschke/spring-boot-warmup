@@ -12,8 +12,8 @@ jobs:
   check-release:
     runs-on: ubuntu-latest
     outputs:
-      latest_tag: ${{ steps.check-released.LATEST_TAG }}
-      should_release: ${{ steps.check-released.SHOULD_RELEASE }}
+      latest_tag: ${{ steps.check-released.outputs.LATEST_TAG }}
+      should_release: ${{ steps.check-released.outputs.SHOULD_RELEASE }}
     steps:
       - uses: actions/checkout@v4
         with:
