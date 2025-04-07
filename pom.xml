@@ -4,7 +4,7 @@
 
     <groupId>dev.jeschke.spring</groupId>
     <artifactId>spring-boot-warmup</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>spring-boot-warmup-core</module>
@@ -35,7 +35,7 @@
         <connection>scm:git:https://github.com/peterjeschke/spring-boot-warmup.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/peterjeschke/spring-boot-warmup.git</developerConnection>
         <url>https://github.com/peterjeschke/spring-boot-warmup</url>
-        <tag>v1.0.4</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
