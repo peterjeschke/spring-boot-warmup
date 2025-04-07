@@ -6,19 +6,69 @@ on:
       - main
 
 jobs:
-  release:
+  check-release:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      latest_tag: ${{ steps.check-released.LATEST_TAG }}
+      should_release: ${{ steps.check-released.SHOULD_RELEASE }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check if latest tag is released
+        id: check-released
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST_TAG="$(git describe --tags --abbrev=0)"
+          echo "LATEST_TAG=$LATEST_TAG" > "$GITHUB_OUTPUT"
+          echo "Found latest tag: $LATEST_TAG"
+          if ! $(gh release view "$LATEST_TAG" > /dev/null 2>&1) ; then
+            echo "Tag $LATEST_TAG is not yet released"
+            echo "SHOULD_RELEASE=true" > "$GITHUB_OUTPUT"
+          fi
+          echo "Tag $LATEST_TAG is already released"
+          echo "SHOULD_RELEASE=false" > "$GITHUB_OUTPUT"
+  github-release:
+    needs: check-release
+    if: needs.check-release.outputs.should_release == 'true'
     permissions:
       contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Github release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_TAG: ${{ needs.check-release.outputs.latest_tag }}
+        run: |
+          gh release create "$LATEST_TAG" --fail-on-no-commits --generate-notes
+  maven-release:
+    needs: check-release
+    if: needs.check-release.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Create release if unreleased tag is found
+          ref: ${{ ${{ needs.check-release.outputs.latest_tag }} }}
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Build with Maven
+        run: mvn -B package
+      - name: Deploy
+        run: mvn -B -P deploy deploy
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          LATEST_TAG="$(git describe --tags --abbrev=0)"
-          if ! $(gh release view "$LATEST_TAG" > /dev/null 2>&1) ; then
-            gh release create "$LATEST_TAG" --fail-on-no-commits --generate-notes
-          fi
+          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
