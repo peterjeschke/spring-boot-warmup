@@ -61,7 +61,7 @@
         <spotless.version>2.44.3</spotless.version>
         <slf4j.version>2.0.17</slf4j.version>
         <awaitility.version>4.3.0</awaitility.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
