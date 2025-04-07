@@ -148,7 +148,7 @@ class ExampleRequestBodyType extends RequestBodyType {
 }
 ```
 
-** Example 4**: Explicit configuration
+**Example 4**: Explicit configuration
 
 ```java
 
