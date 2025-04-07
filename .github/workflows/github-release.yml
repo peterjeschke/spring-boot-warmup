@@ -12,7 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Create release if unreleased tag is found
+        with:
+          GH_TOKEN: ${{ secrets.GITHUB_CLI_TOKEN }}
         run: |
           LATEST_TAG="$(git describe --tags --abbrev=0)"
           if [ ! $(gh release view "$LATEST_TAG" > /dev/null 2>&1) ] ; then
