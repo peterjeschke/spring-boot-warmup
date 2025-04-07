@@ -1,4 +1,4 @@
-name: Maven deploy
+name: Maven deploy SNAPSHOT
 
 on:
   push:
@@ -27,9 +27,9 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Build with Maven
-        run: mvn -B --no-transfer-progress package
+        run: mvn -B package
       - name: Deploy
-        run: mvn -B --no-transfer-progress -P deploy deploy
+        run: mvn -B -P deploy deploy
         env:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
