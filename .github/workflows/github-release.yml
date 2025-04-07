@@ -24,14 +24,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LATEST_TAG="$(git describe --tags --abbrev=0)"
-          echo "LATEST_TAG=$LATEST_TAG" > "$GITHUB_OUTPUT"
+          echo "LATEST_TAG=$LATEST_TAG" >> "$GITHUB_OUTPUT"
           echo "Found latest tag: $LATEST_TAG"
           if ! $(gh release view "$LATEST_TAG" > /dev/null 2>&1) ; then
             echo "Tag $LATEST_TAG is not yet released"
-            echo "SHOULD_RELEASE=true" > "$GITHUB_OUTPUT"
+            echo "SHOULD_RELEASE=true" >> "$GITHUB_OUTPUT"
           else
             echo "Tag $LATEST_TAG is already released"
-            echo "SHOULD_RELEASE=false" > "$GITHUB_OUTPUT"
+            echo "SHOULD_RELEASE=false" >> "$GITHUB_OUTPUT"
           fi
   github-release:
     needs: check-release
