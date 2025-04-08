@@ -13,6 +13,7 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private final List<Endpoint> endpoints = new ArrayList<>();
     private boolean enableAutomaticWarmUpEndpoint = false;
     private boolean enableReadinessIndicator = true;
+    private String protocol = "http";
 
     @Override
     public WarmUpBuilder addEndpoint(final Endpoint endpoint) {
@@ -82,7 +83,13 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     }
 
     @Override
+    public WarmUpBuilder setRestProtocol(final String protocol) {
+        this.protocol = protocol;
+        return this;
+    }
+
+    @Override
     public WarmUpSettings build() {
-        return new WarmUpSettings(endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator);
+        return new WarmUpSettings(endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator, protocol);
     }
 }

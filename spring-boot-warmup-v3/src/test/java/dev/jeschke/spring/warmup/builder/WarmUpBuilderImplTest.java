@@ -56,7 +56,7 @@ class WarmUpBuilderImplTest {
                         new Endpoint("PUT", "path", requestBody, APPLICATION_XML_VALUE)));
     }
 
-    private static Arguments args(UnaryOperator<WarmUpBuilder> method, final Endpoint expectedEndpoint) {
+    private static Arguments args(final UnaryOperator<WarmUpBuilder> method, final Endpoint expectedEndpoint) {
         return arguments(method, expectedEndpoint);
     }
 
@@ -104,5 +104,19 @@ class WarmUpBuilderImplTest {
         final var actual = builder.disableReadinessIndicator().build();
 
         assertThat(actual.enableReadinessIndicator()).isFalse();
+    }
+
+    @Test
+    void protocol_default() {
+        final var actual = builder.build();
+
+        assertThat(actual.protocol()).isEqualTo("http");
+    }
+
+    @Test
+    void protocol() {
+        final var actual = builder.setRestProtocol("https").build();
+
+        assertThat(actual.protocol()).isEqualTo("https");
     }
 }

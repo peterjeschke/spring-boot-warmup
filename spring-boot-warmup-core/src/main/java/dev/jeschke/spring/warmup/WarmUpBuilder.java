@@ -63,6 +63,13 @@ public interface WarmUpBuilder {
     WarmUpBuilder disableReadinessIndicator();
 
     /**
+     * Configures the protocol to use for REST calls.
+     *
+     * @param protocol should be either "http" or "https"
+     */
+    WarmUpBuilder setRestProtocol(String protocol);
+
+    /**
      * Construct the final settings.
      * <p>
      * This method is intended for internal use only; clients should not call this method.
