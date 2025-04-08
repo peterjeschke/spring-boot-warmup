@@ -32,7 +32,7 @@ public class AutomaticEndpointHttpInitializer implements WarmUpInitializer {
         context.registerBean(CONTROLLER_BEAN_NAME, AutomaticEndpoint.class);
         reloadControllers();
 
-        callAutomaticEndpoint();
+        callAutomaticEndpoint(settings);
 
         context.removeBeanDefinition(CONTROLLER_BEAN_NAME);
         reloadControllers();
@@ -48,9 +48,10 @@ public class AutomaticEndpointHttpInitializer implements WarmUpInitializer {
         });
     }
 
-    private void callAutomaticEndpoint() {
+    private void callAutomaticEndpoint(final WarmUpSettings settings) {
+        log.info("Calling automatic endpoint");
         final var port = context.getWebServer().getPort();
-        final var url = "http://localhost:%s/%s".formatted(port, AUTOMATIC_WARM_UP_ENDPOINT);
+        final var url = "%s://localhost:%s/%s".formatted(settings.protocol(), port, AUTOMATIC_WARM_UP_ENDPOINT);
         final var response = restClient
                 .post()
                 .uri(url)

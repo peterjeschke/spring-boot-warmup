@@ -59,7 +59,7 @@ public class HttpInitializer implements WarmUpInitializer {
     @Override
     public void warmUp(final WarmUpSettings configuration) {
         for (final var endpoint : configuration.endpoints()) {
-            callEndpoint(endpoint);
+            callEndpoint(endpoint, configuration);
         }
     }
 
@@ -127,9 +127,15 @@ public class HttpInitializer implements WarmUpInitializer {
         }
     }
 
-    private void callEndpoint(final Endpoint endpoint) {
+    private void callEndpoint(final Endpoint endpoint, final WarmUpSettings configuration) {
         final var port = webServerContext.getWebServer().getPort();
-        final var url = "http://localhost:%s/%s".formatted(port, endpoint.path());
+        final var url = "%s://localhost:%s/%s".formatted(configuration.protocol(), port, endpoint.path());
+        log.info(
+                "Calling endpoint {} {} with body {} ({})",
+                endpoint.method(),
+                url,
+                endpoint.body(),
+                endpoint.contentType());
 
         final var method = HttpMethod.valueOf(endpoint.method());
         var spec = restClient //
