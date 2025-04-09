@@ -3,6 +3,8 @@ package dev.jeschke.spring.warmup;
 import static org.springframework.boot.availability.ReadinessState.ACCEPTING_TRAFFIC;
 import static org.springframework.boot.availability.ReadinessState.REFUSING_TRAFFIC;
 
+import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
+import java.util.List;
 import org.springframework.boot.actuate.availability.ReadinessStateHealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.availability.ApplicationAvailability;
@@ -14,20 +16,23 @@ import org.springframework.stereotype.Component;
 public class WarmUpReadinessIndicator extends ReadinessStateHealthIndicator {
 
     private final WarmUpRunner warmUpRunner;
-    private final WarmUpSettingsFactory settingsFactory;
+    private final WarmUpFactory factory;
+    private final List<WarmUpInitializer> initializers;
 
     public WarmUpReadinessIndicator(
             final ApplicationAvailability availability,
             final WarmUpRunner warmUpRunner,
-            final WarmUpSettingsFactory settingsFactory) {
+            final WarmUpFactory factory,
+            final List<WarmUpInitializer> initializers) {
         super(availability);
         this.warmUpRunner = warmUpRunner;
-        this.settingsFactory = settingsFactory;
+        this.factory = factory;
+        this.initializers = initializers;
     }
 
     @Override
     protected AvailabilityState getState(final ApplicationAvailability applicationAvailability) {
-        final var settings = settingsFactory.getSettings();
+        final var settings = factory.getSettings(initializers);
         return !warmUpRunner.isWarmedUp() && settings.enableReadinessIndicator() ? REFUSING_TRAFFIC : ACCEPTING_TRAFFIC;
     }
 }

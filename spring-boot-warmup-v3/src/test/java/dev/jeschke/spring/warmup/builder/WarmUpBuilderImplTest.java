@@ -7,6 +7,7 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
+import java.net.http.HttpClient;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,15 +16,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class WarmUpBuilderImplTest {
+
+    @Mock
+    private HttpClient defaultHttpClient;
+
+    @Mock
+    private HttpClient customHttpClient;
+
     private WarmUpBuilderImpl builder;
 
     @BeforeEach
     void setUp() {
-        builder = new WarmUpBuilderImpl();
+        builder = new WarmUpBuilderImpl(defaultHttpClient);
     }
 
     @ParameterizedTest
@@ -39,20 +48,20 @@ class WarmUpBuilderImplTest {
     private static Stream<Arguments> endpointArguments() {
         final Object requestBody = "body";
         return Stream.of(
-                args(b -> b.addEndpoint(new Endpoint("path")), new Endpoint("path")),
-                args(b -> b.addEndpoint("path"), new Endpoint("path")),
-                args(b -> b.addEndpoint("POST", "path"), new Endpoint("POST", "path")),
+                args(builder -> builder.addEndpoint(new Endpoint("path")), new Endpoint("path")),
+                args(builder -> builder.addEndpoint("path"), new Endpoint("path")),
+                args(builder -> builder.addEndpoint("POST", "path"), new Endpoint("POST", "path")),
                 args(
-                        b -> b.addEndpoint("path", requestBody),
+                        builder -> builder.addEndpoint("path", requestBody),
                         new Endpoint("path", requestBody, APPLICATION_JSON_VALUE)),
                 args(
-                        b -> b.addEndpoint("path", requestBody, APPLICATION_XML_VALUE),
+                        builder -> builder.addEndpoint("path", requestBody, APPLICATION_XML_VALUE),
                         new Endpoint("path", requestBody, APPLICATION_XML_VALUE)),
                 args(
-                        b -> b.addEndpoint("PUT", "path", requestBody),
+                        builder -> builder.addEndpoint("PUT", "path", requestBody),
                         new Endpoint("PUT", "path", requestBody, APPLICATION_JSON_VALUE)),
                 args(
-                        b -> b.addEndpoint("PUT", "path", requestBody, APPLICATION_XML_VALUE),
+                        builder -> builder.addEndpoint("PUT", "path", requestBody, APPLICATION_XML_VALUE),
                         new Endpoint("PUT", "path", requestBody, APPLICATION_XML_VALUE)));
     }
 
@@ -107,16 +116,30 @@ class WarmUpBuilderImplTest {
     }
 
     @Test
-    void protocol_default() {
+    void setProtocol_default() {
         final var actual = builder.build();
 
         assertThat(actual.protocol()).isEqualTo("http");
     }
 
     @Test
-    void protocol() {
+    void setProtocol() {
         final var actual = builder.setRestProtocol("https").build();
 
         assertThat(actual.protocol()).isEqualTo("https");
+    }
+
+    @Test
+    void setHttpClient_default() {
+        final var actual = builder.build();
+
+        assertThat(actual.httpClient()).isSameAs(defaultHttpClient);
+    }
+
+    @Test
+    void setHttpClient() {
+        final var actual = builder.setHttpClient(customHttpClient).build();
+
+        assertThat(actual.httpClient()).isSameAs(customHttpClient);
     }
 }

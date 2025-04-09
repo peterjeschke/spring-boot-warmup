@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 public class WarmUpRunner {
 
     private final List<WarmUpInitializer> initializers;
-    private final WarmUpSettingsFactory settingsFactory;
+    private final WarmUpFactory factory;
     private final AtomicBoolean done = new AtomicBoolean(false);
 
     @Async
     @EventListener
-    public void onContextRefreshed(final ContextRefreshedEvent event) {
-        final var settings = settingsFactory.getSettings();
+    public void onContextRefreshed(final ContextRefreshedEvent ignoredEvent) {
+        final var settings = factory.getSettings(initializers);
         initializers.forEach(initializer -> initializer.warmUp(settings));
         done.set(true);
     }

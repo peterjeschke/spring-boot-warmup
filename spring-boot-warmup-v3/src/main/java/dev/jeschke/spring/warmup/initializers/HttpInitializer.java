@@ -9,6 +9,7 @@ import dev.jeschke.spring.warmup.ControllerWarmUp;
 import dev.jeschke.spring.warmup.ControllerWarmUp.DefaultRequestBodyType;
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
+import dev.jeschke.spring.warmup.WarmUpFactory;
 import dev.jeschke.spring.warmup.WarmUpSettings;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -20,7 +21,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
@@ -28,7 +28,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -40,10 +39,9 @@ public class HttpInitializer implements WarmUpInitializer {
 
     private final ApplicationContext applicationContext;
 
-    @Name("warmUpRestClient")
-    private final RestClient restClient;
-
     private final ServletWebServerApplicationContext webServerContext;
+
+    private final WarmUpFactory warmUpFactory;
 
     @Override
     public WarmUpBuilder configure(final WarmUpBuilder builder) {
@@ -138,8 +136,9 @@ public class HttpInitializer implements WarmUpInitializer {
                 endpoint.contentType());
 
         final var method = HttpMethod.valueOf(endpoint.method());
-        var spec = restClient //
-                .method(method) //
+        var spec = warmUpFactory
+                .getRestClient(configuration.httpClient())
+                .method(method)
                 .uri(url);
         if (endpoint.body() != null) {
             spec = spec //

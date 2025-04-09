@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 
 @ExtendWith(MockitoExtension.class)
-class WarmUpSettingsFactoryTest {
+class WarmUpFactoryTest {
 
     @Mock
     private ApplicationContext context;
@@ -40,22 +41,26 @@ class WarmUpSettingsFactoryTest {
     @Captor
     private ArgumentCaptor<WarmUpBuilder> builder;
 
-    private WarmUpSettingsFactory factory;
+    @Mock
+    private HttpClient httpClient;
+
+    private WarmUpFactory factory;
 
     @BeforeEach
     void setUp() {
-        factory = new WarmUpSettingsFactory(context, List.of(initializer1, initializer2));
-        when(context.getBeansOfType(WarmUpCustomizer.class))
+        factory = new WarmUpFactory(context, httpClient);
+        lenient()
+                .when(context.getBeansOfType(WarmUpCustomizer.class))
                 .thenReturn(new TreeMap<>(Map.of("customizer1", customizer1, "customizer2", customizer2)));
-        when(customizer1.apply(any())).thenAnswer(returnsFirstArg());
-        when(customizer2.apply(any())).thenAnswer(returnsFirstArg());
-        when(initializer1.configure(any())).thenAnswer(returnsFirstArg());
-        when(initializer2.configure(any())).thenAnswer(returnsFirstArg());
+        lenient().when(customizer1.apply(any())).thenAnswer(returnsFirstArg());
+        lenient().when(customizer2.apply(any())).thenAnswer(returnsFirstArg());
+        lenient().when(initializer1.configure(any())).thenAnswer(returnsFirstArg());
+        lenient().when(initializer2.configure(any())).thenAnswer(returnsFirstArg());
     }
 
     @Test
     void getSettings() {
-        final var settings = factory.getSettings();
+        final var settings = factory.getSettings(List.of(initializer1, initializer2));
 
         final var inOrder = inOrder(customizer1, customizer2, initializer1, initializer2);
         inOrder.verify(customizer1).apply(builder.capture());
@@ -70,8 +75,8 @@ class WarmUpSettingsFactoryTest {
 
     @Test
     void getSettings_onlyInitializesOnce() {
-        final var settings1 = factory.getSettings();
-        final var settings2 = factory.getSettings();
+        final var settings1 = factory.getSettings(List.of(initializer1, initializer2));
+        final var settings2 = factory.getSettings(List.of(initializer1, initializer2));
 
         final var inOrder = inOrder(customizer1, customizer2, initializer1, initializer2);
         inOrder.verify(customizer1).apply(builder.capture());
@@ -82,5 +87,20 @@ class WarmUpSettingsFactoryTest {
         assertThat(builder.getAllValues())
                 .allSatisfy(value -> assertThat(builder.getAllValues()).allMatch(value::equals));
         assertThat(settings1).isSameAs(settings2);
+    }
+
+    @Test
+    void getRestClient() {
+        final var restClient = factory.getRestClient(httpClient);
+
+        assertThat(restClient).isNotNull();
+    }
+
+    @Test
+    void getRestClient_onlyInitializesOnce() {
+        final var restClient1 = factory.getRestClient(httpClient);
+        final var restClient2 = factory.getRestClient(httpClient);
+
+        assertThat(restClient1).isSameAs(restClient2);
     }
 }

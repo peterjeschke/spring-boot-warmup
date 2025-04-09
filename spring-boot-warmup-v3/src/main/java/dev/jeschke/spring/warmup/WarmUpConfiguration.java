@@ -7,19 +7,15 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.client.RestClient;
 
 @EnableAsync
 @AutoConfiguration
 @ComponentScan(excludeFilters = @Filter(IgnoreBean.class))
 public class WarmUpConfiguration {
-    @Bean("warmUpRestClient")
-    public RestClient restClient() {
-        final var httpClient = HttpClient.newBuilder().followRedirects(ALWAYS).build();
-        return RestClient.builder()
-                .requestFactory(new JdkClientHttpRequestFactory(httpClient))
-                .build();
+
+    @Bean("defaultWarmUpHttpClient")
+    public HttpClient defaultHttpClient() {
+        return HttpClient.newBuilder().followRedirects(ALWAYS).build();
     }
 }
