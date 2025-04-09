@@ -26,7 +26,7 @@ class WarmUpRunnerTest {
     private WarmUpInitializer initializer2;
 
     @Mock
-    private WarmUpSettingsFactory factory;
+    private WarmUpFactory factory;
 
     @Mock
     private WarmUpSettings settings;
@@ -36,7 +36,7 @@ class WarmUpRunnerTest {
     @BeforeEach
     void init() {
         warmUpRunner = new WarmUpRunner(List.of(initializer1, initializer2), factory);
-        when(factory.getSettings()).thenReturn(settings);
+        when(factory.getSettings(List.of(initializer1, initializer2))).thenReturn(settings);
     }
 
     @Test

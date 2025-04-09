@@ -1,5 +1,7 @@
 package dev.jeschke.spring.warmup;
 
+import java.net.http.HttpClient;
+
 /**
  * Builder to configure the WarmUp library.
  * <p>
@@ -68,6 +70,11 @@ public interface WarmUpBuilder {
      * @param protocol should be either "http" or "https"
      */
     WarmUpBuilder setRestProtocol(String protocol);
+
+    /**
+     * Sets the HTTP client the library will use for REST calls.
+     */
+    WarmUpBuilder setHttpClient(HttpClient httpClient);
 
     /**
      * Construct the final settings.

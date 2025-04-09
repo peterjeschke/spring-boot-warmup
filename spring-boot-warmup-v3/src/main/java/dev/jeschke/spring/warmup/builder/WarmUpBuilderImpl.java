@@ -5,6 +5,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
 import dev.jeschke.spring.warmup.WarmUpSettings;
+import java.net.http.HttpClient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,11 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private boolean enableAutomaticWarmUpEndpoint = false;
     private boolean enableReadinessIndicator = true;
     private String protocol = "http";
+    private HttpClient httpClient;
+
+    public WarmUpBuilderImpl(final HttpClient defaultHttpClient) {
+        this.httpClient = defaultHttpClient;
+    }
 
     @Override
     public WarmUpBuilder addEndpoint(final Endpoint endpoint) {
@@ -89,7 +95,14 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     }
 
     @Override
+    public WarmUpBuilder setHttpClient(final HttpClient httpClient) {
+        this.httpClient = httpClient;
+        return this;
+    }
+
+    @Override
     public WarmUpSettings build() {
-        return new WarmUpSettings(endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator, protocol);
+        return new WarmUpSettings(
+                endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator, protocol, httpClient);
     }
 }

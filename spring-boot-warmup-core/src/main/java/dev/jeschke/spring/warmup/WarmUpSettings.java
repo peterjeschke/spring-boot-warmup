@@ -1,5 +1,6 @@
 package dev.jeschke.spring.warmup;
 
+import java.net.http.HttpClient;
 import java.util.Collection;
 
 /**
@@ -9,4 +10,5 @@ public record WarmUpSettings(
         Collection<Endpoint> endpoints,
         boolean enableAutomaticMvcEndpoint,
         boolean enableReadinessIndicator,
-        String protocol) {}
+        String protocol,
+        HttpClient httpClient) {}

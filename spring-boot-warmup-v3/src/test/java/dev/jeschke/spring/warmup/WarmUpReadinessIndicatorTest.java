@@ -7,12 +7,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.boot.availability.ReadinessState.ACCEPTING_TRAFFIC;
 import static org.springframework.boot.availability.ReadinessState.REFUSING_TRAFFIC;
 
+import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
+import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.availability.ApplicationAvailability;
@@ -30,7 +32,7 @@ class WarmUpReadinessIndicatorTest {
     private WarmUpRunner warmUpRunner;
 
     @Mock
-    private WarmUpSettingsFactory settingsFactory;
+    private WarmUpFactory factory;
 
     @Mock
     private WarmUpSettings settings;
@@ -38,13 +40,20 @@ class WarmUpReadinessIndicatorTest {
     @Mock
     private ApplicationAvailability availability;
 
-    @InjectMocks
+    @Mock
+    private WarmUpInitializer initializer;
+
     private WarmUpReadinessIndicator indicator;
+
+    @BeforeEach
+    void setUp() {
+        indicator = new WarmUpReadinessIndicator(availability, warmUpRunner, factory, List.of(initializer));
+    }
 
     @ParameterizedTest
     @MethodSource("getStateParams")
-    void getState(boolean isUp, boolean enableReadinessIndicator, AvailabilityState expected) {
-        when(settingsFactory.getSettings()).thenReturn(settings);
+    void getState(final boolean isUp, final boolean enableReadinessIndicator, final AvailabilityState expected) {
+        when(factory.getSettings(List.of(initializer))).thenReturn(settings);
         lenient().when(warmUpRunner.isWarmedUp()).thenReturn(isUp);
         lenient().when(settings.enableReadinessIndicator()).thenReturn(enableReadinessIndicator);
 
