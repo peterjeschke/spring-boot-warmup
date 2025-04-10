@@ -127,7 +127,8 @@ public class HttpInitializer implements WarmUpInitializer {
 
     private void callEndpoint(final Endpoint endpoint, final WarmUpSettings configuration) {
         final var port = webServerContext.getWebServer().getPort();
-        final var url = "%s://localhost:%s/%s".formatted(configuration.protocol(), port, endpoint.path());
+        final var url =
+                "%s://%s:%s/%s".formatted(configuration.protocol(), configuration.hostname(), port, endpoint.path());
         log.info(
                 "Calling endpoint {} {} with body {} ({})",
                 endpoint.method(),

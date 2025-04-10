@@ -142,4 +142,18 @@ class WarmUpBuilderImplTest {
 
         assertThat(actual.httpClient()).isSameAs(customHttpClient);
     }
+
+    @Test
+    void setHttpHostname_default() {
+        final var actual = builder.build();
+
+        assertThat(actual.hostname()).isEqualTo("localhost");
+    }
+
+    @Test
+    void setHttpHostname() {
+        final var actual = builder.setHttpHostname("customName").build();
+
+        assertThat(actual.hostname()).isEqualTo("customName");
+    }
 }
