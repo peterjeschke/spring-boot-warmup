@@ -16,6 +16,7 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private boolean enableReadinessIndicator = true;
     private String protocol = "http";
     private HttpClient httpClient;
+    private String httpHostname = "localhost";
 
     public WarmUpBuilderImpl(final HttpClient defaultHttpClient) {
         this.httpClient = defaultHttpClient;
@@ -101,8 +102,14 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     }
 
     @Override
+    public WarmUpBuilder setHttpHostname(final String hostname) {
+        this.httpHostname = hostname;
+        return this;
+    }
+
+    @Override
     public WarmUpSettings build() {
         return new WarmUpSettings(
-                endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator, protocol, httpClient);
+                endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator, protocol, httpClient, httpHostname);
     }
 }

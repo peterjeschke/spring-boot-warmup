@@ -65,9 +65,12 @@ public interface WarmUpBuilder {
     WarmUpBuilder disableReadinessIndicator();
 
     /**
-     * Configures the protocol to use for REST calls.
+     * Configures the protocol to use for REST calls. If not changed, the default is set to "http".
+     * <p>
+     * Of you enable https, you probably also need to set the hostname to match it to the certificate.
      *
      * @param protocol should be either "http" or "https"
+     * @see #setHttpHostname(String)
      */
     WarmUpBuilder setRestProtocol(String protocol);
 
@@ -75,6 +78,13 @@ public interface WarmUpBuilder {
      * Sets the HTTP client the library will use for REST calls.
      */
     WarmUpBuilder setHttpClient(HttpClient httpClient);
+
+    /**
+     * Sets the host name to connect to. If not changed, defaults to localhost.
+     * <p>
+     * This can be used if your service only responds to the correct hostname.
+     */
+    WarmUpBuilder setHttpHostname(String hostname);
 
     /**
      * Construct the final settings.

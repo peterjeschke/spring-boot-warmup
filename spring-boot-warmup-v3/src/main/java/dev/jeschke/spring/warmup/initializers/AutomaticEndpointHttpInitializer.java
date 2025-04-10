@@ -48,7 +48,8 @@ public class AutomaticEndpointHttpInitializer implements WarmUpInitializer {
     private void callAutomaticEndpoint(final WarmUpSettings settings) {
         log.info("Calling automatic endpoint");
         final var port = context.getWebServer().getPort();
-        final var url = "%s://localhost:%s/%s".formatted(settings.protocol(), port, AUTOMATIC_WARM_UP_ENDPOINT);
+        final var url =
+                "%s://%s:%s/%s".formatted(settings.protocol(), settings.hostname(), port, AUTOMATIC_WARM_UP_ENDPOINT);
         final var response = warmUpFactory
                 .getRestClient(settings.httpClient())
                 .post()

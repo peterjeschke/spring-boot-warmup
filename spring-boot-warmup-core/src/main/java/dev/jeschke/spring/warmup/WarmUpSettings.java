@@ -11,4 +11,5 @@ public record WarmUpSettings(
         boolean enableAutomaticMvcEndpoint,
         boolean enableReadinessIndicator,
         String protocol,
-        HttpClient httpClient) {}
+        HttpClient httpClient,
+        String hostname) {}
