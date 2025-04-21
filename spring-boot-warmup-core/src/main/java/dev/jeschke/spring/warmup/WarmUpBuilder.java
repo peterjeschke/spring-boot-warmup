@@ -1,6 +1,7 @@
 package dev.jeschke.spring.warmup;
 
 import java.net.http.HttpClient;
+import java.security.GeneralSecurityException;
 
 /**
  * Builder to configure the WarmUp library.
@@ -76,6 +77,8 @@ public interface WarmUpBuilder {
 
     /**
      * Sets the HTTP client the library will use for REST calls.
+     * <p>
+     * <strong>Note:</strong> If you set a custom HttpClient, other settings like {@link #disableHttpTlsVerification()} will have no effect.
      */
     WarmUpBuilder setHttpClient(HttpClient httpClient);
 
@@ -85,6 +88,30 @@ public interface WarmUpBuilder {
      * This can be used if your service only responds to the correct hostname.
      */
     WarmUpBuilder setHttpHostname(String hostname);
+
+    /**
+     * Disables TLS certificate verification for REST calls. This is useful if your application only allows https but uses a self-signed certificate or you have to use localhost as the hostname.
+     * <p>
+     * <strong>This is insecure!</strong> You should always prefer to import custom certificates by configuring your own HTTP client or connect to the real hostname instead of localhost, if possible. If you absolutely have to disable certificate checks, make sure that you don't configure the library to call anything besides your own endpoints on localhost.
+     * <p>
+     * This feature is enabled by default.
+     * <strong>Note:</strong> Enabling or disabling this feature has no effect if you configure a custom HttpClient using {@link #setHttpClient(HttpClient)}
+     *
+     * @throws GeneralSecurityException if any operations on the underlying SSLContext fail
+     * @see #enableHttpTlsVerification()
+     */
+    WarmUpBuilder disableHttpTlsVerification() throws GeneralSecurityException;
+
+    /**
+     * Enables TLS certificate verification for REST calls.
+     * <p>
+     * This feature is enabled by default.
+     * <strong>Note:</strong> Enabling or disabling this feature has no effect if you configure a custom HttpClient using {@link #setHttpClient(HttpClient)}
+     *
+     * @throws GeneralSecurityException if any operations on the underlying SSLContext fail
+     * @see #disableHttpTlsVerification()
+     */
+    WarmUpBuilder enableHttpTlsVerification() throws GeneralSecurityException;
 
     /**
      * Construct the final settings.

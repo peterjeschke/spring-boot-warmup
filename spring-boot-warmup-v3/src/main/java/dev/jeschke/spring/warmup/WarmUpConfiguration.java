@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class WarmUpConfiguration {
 
     @Bean("defaultWarmUpHttpClient")
-    public HttpClient defaultHttpClient() {
-        return HttpClient.newBuilder().followRedirects(ALWAYS).build();
+    public HttpClient.Builder defaultHttpClient() {
+        return HttpClient.newBuilder().followRedirects(ALWAYS);
     }
 }

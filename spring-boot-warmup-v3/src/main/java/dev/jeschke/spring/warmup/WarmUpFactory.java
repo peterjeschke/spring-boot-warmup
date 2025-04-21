@@ -20,7 +20,7 @@ public class WarmUpFactory {
     private final ApplicationContext context;
 
     @Name("defaultWarmUpHttpClient")
-    private final HttpClient defaultWarmUpHttpClient;
+    private final HttpClient.Builder defaultWarmUpHttpClient;
 
     private final AtomicReference<WarmUpSettings> cachedSettings = new AtomicReference<>();
     private final AtomicReference<RestClient> cachedRestClient = new AtomicReference<>();

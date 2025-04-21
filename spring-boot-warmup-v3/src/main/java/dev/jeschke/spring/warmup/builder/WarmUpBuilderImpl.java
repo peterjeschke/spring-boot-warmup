@@ -6,8 +6,11 @@ import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
 import dev.jeschke.spring.warmup.WarmUpSettings;
 import java.net.http.HttpClient;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 public class WarmUpBuilderImpl implements WarmUpBuilder {
 
@@ -16,10 +19,12 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private boolean enableReadinessIndicator = true;
     private String protocol = "http";
     private HttpClient httpClient;
+    private HttpClient.Builder defaultHttpClient;
     private String httpHostname = "localhost";
+    private boolean enableTlsVerification = true;
 
-    public WarmUpBuilderImpl(final HttpClient defaultHttpClient) {
-        this.httpClient = defaultHttpClient;
+    public WarmUpBuilderImpl(final HttpClient.Builder defaultHttpClient) {
+        this.defaultHttpClient = defaultHttpClient;
     }
 
     @Override
@@ -108,8 +113,32 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     }
 
     @Override
+    public WarmUpBuilder disableHttpTlsVerification() throws GeneralSecurityException {
+        final var sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[] {new TrustAllTrustManager()}, null);
+
+        this.defaultHttpClient = this.defaultHttpClient.sslContext(sslContext);
+        this.enableTlsVerification = false;
+        return this;
+    }
+
+    @Override
+    public WarmUpBuilder enableHttpTlsVerification() throws GeneralSecurityException {
+        this.defaultHttpClient = this.defaultHttpClient.sslContext(SSLContext.getDefault());
+        this.enableTlsVerification = true;
+        return this;
+    }
+
+    @Override
     public WarmUpSettings build() {
+        final var actualHttpClient = this.httpClient == null ? defaultHttpClient.build() : httpClient;
         return new WarmUpSettings(
-                endpoints, enableAutomaticWarmUpEndpoint, enableReadinessIndicator, protocol, httpClient, httpHostname);
+                endpoints,
+                enableAutomaticWarmUpEndpoint,
+                enableReadinessIndicator,
+                protocol,
+                actualHttpClient,
+                httpHostname,
+                enableTlsVerification);
     }
 }

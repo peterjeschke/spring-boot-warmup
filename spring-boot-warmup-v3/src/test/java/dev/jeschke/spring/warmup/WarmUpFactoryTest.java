@@ -44,11 +44,14 @@ class WarmUpFactoryTest {
     @Mock
     private HttpClient httpClient;
 
+    @Mock
+    private HttpClient.Builder httpClientBuilder;
+
     private WarmUpFactory factory;
 
     @BeforeEach
     void setUp() {
-        factory = new WarmUpFactory(context, httpClient);
+        factory = new WarmUpFactory(context, httpClientBuilder);
         lenient()
                 .when(context.getBeansOfType(WarmUpCustomizer.class))
                 .thenReturn(new TreeMap<>(Map.of("customizer1", customizer1, "customizer2", customizer2)));
