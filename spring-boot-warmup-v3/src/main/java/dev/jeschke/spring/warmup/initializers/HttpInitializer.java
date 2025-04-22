@@ -10,10 +10,11 @@ import dev.jeschke.spring.warmup.ControllerWarmUp.DefaultRequestBodyType;
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
 import dev.jeschke.spring.warmup.WarmUpFactory;
-import dev.jeschke.spring.warmup.WarmUpSettings;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,6 +59,28 @@ public class HttpInitializer implements WarmUpInitializer {
     public void warmUp(final WarmUpSettings configuration) {
         for (final var endpoint : configuration.endpoints()) {
             callEndpoint(endpoint, configuration);
+        }
+        for (final var repeating : configuration.repeatingWarmUpSettings()) {
+            for (final var endpoint : repeating.settings().endpoints()) {
+                try {
+                    callRepeating(
+                            repeating.times(),
+                            repeating.interval(),
+                            () -> callEndpoint(endpoint, repeating.settings()));
+                } catch (final InterruptedException e) {
+                    log.warn("Was interrupted. Will stop repeating calls", e);
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
+
+    private void callRepeating(final int times, final Duration interval, final Runnable runnable)
+            throws InterruptedException {
+        for (var i = 0; i < times; i++) {
+            runnable.run();
+            Thread.sleep(interval.toMillis());
         }
     }
 

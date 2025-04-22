@@ -1,13 +1,16 @@
 package dev.jeschke.spring.warmup;
 
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.net.http.HttpClient;
 import java.security.GeneralSecurityException;
+import java.time.Duration;
 
 /**
  * Builder to configure the WarmUp library.
  * <p>
  * This interface is implemented by the library; clients should not create custom implementations.
  */
+@SuppressWarnings("JavadocDeclaration")
 public interface WarmUpBuilder {
 
     WarmUpBuilder addEndpoint(Endpoint endpoint);
@@ -90,12 +93,16 @@ public interface WarmUpBuilder {
     WarmUpBuilder setHttpHostname(String hostname);
 
     /**
-     * Disables TLS certificate verification for REST calls. This is useful if your application only allows https but uses a self-signed certificate or you have to use localhost as the hostname.
+     * Disables TLS certificate verification for REST calls. This is useful if your application only allows https but uses a self-signed
+     * certificate or you have to use localhost as the hostname.
      * <p>
-     * <strong>This is insecure!</strong> You should always prefer to import custom certificates by configuring your own HTTP client or connect to the real hostname instead of localhost, if possible. If you absolutely have to disable certificate checks, make sure that you don't configure the library to call anything besides your own endpoints on localhost.
+     * <strong>This is insecure!</strong> You should always prefer to import custom certificates by configuring your own HTTP client or
+     * connect to the real hostname instead of localhost, if possible. If you absolutely have to disable certificate checks, make sure
+     * that you don't configure the library to call anything besides your own endpoints on localhost.
      * <p>
      * This feature is enabled by default.
-     * <strong>Note:</strong> Enabling or disabling this feature has no effect if you configure a custom HttpClient using {@link #setHttpClient(HttpClient)}
+     * <strong>Note:</strong> Enabling or disabling this feature has no effect if you configure a custom HttpClient using
+     * {@link #setHttpClient(HttpClient)}
      *
      * @throws GeneralSecurityException if any operations on the underlying SSLContext fail
      * @see #enableHttpTlsVerification()
@@ -106,12 +113,58 @@ public interface WarmUpBuilder {
      * Enables TLS certificate verification for REST calls.
      * <p>
      * This feature is enabled by default.
-     * <strong>Note:</strong> Enabling or disabling this feature has no effect if you configure a custom HttpClient using {@link #setHttpClient(HttpClient)}
+     * <strong>Note:</strong> Enabling or disabling this feature has no effect if you configure a custom HttpClient using
+     * {@link #setHttpClient(HttpClient)}
      *
      * @throws GeneralSecurityException if any operations on the underlying SSLContext fail
      * @see #disableHttpTlsVerification()
      */
     WarmUpBuilder enableHttpTlsVerification() throws GeneralSecurityException;
+
+    /**
+     * Modifies the given customizer to call defined endpoints multiple times. This can be useful if your endpoint needs to be called
+     * multiple times to "fully" warm up.
+     * <p>
+     * By default, endpoints will be called five times with 0.5s time between calls. See overrides if you want to change these parameters.
+     * <p>
+     * <strong>Note:</strong> While valid code, nesting this method multiple times is not supported. Only the first level will be evaluated.
+     * <p>
+     * {@snippet :
+     *  public WarmUpCustomizer warmUpCustomizer() {
+     *      return builder->builder.addEndpoint("/getPath") // will be called only once
+     *      .initializingMultipleTimes(builder ->
+     *          builder.addEndpoint("/getPath2") // will be called multiple times
+     *      )
+     *      .build();
+     *  }
+     * }
+     * @throws Exception any exception thrown by the customizer
+     */
+    default WarmUpBuilder initializingMultipleTimes(WarmUpCustomizer customizer) throws Exception {
+        return initializingMultipleTimes(5, Duration.ofMillis(500), customizer);
+    }
+
+    /**
+     * Modifies the given customizer to call defined endpoints multiple times. This can be useful if your endpoint needs to be called
+     * multiple times to "fully" warm up.
+     * <p>
+     * <strong>Note:</strong> While valid code, nesting this method multiple times is not supported. Only the first level will be evaluated.
+     * <p>
+     * {@snippet :
+     *  public WarmUpCustomizer warmUpCustomizer() {
+     *      return builder->builder.addEndpoint("/getPath") // will be called only once
+     *      .initializingMultipleTimes(5, Duration.ofSeconds(1), builder ->
+     *          builder.addEndpoint("/getPath2") // will be called five times
+     *      )
+     *      .build();
+     *  }
+     * }
+     *
+     * @param times    how often the initializers should run
+     * @param interval how long to wait between initializer runs
+     * @throws Exception any exception thrown by the customizer
+     */
+    WarmUpBuilder initializingMultipleTimes(int times, Duration interval, WarmUpCustomizer customizer) throws Exception;
 
     /**
      * Construct the final settings.
