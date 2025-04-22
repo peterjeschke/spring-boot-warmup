@@ -1,7 +1,5 @@
 package dev.jeschke.spring.warmup;
 
-import java.util.function.UnaryOperator;
-
 // @formatter:off
 /**
  * Applications can create beans implementing this interface to customize the WarmUp features.
@@ -19,4 +17,9 @@ import java.util.function.UnaryOperator;
 // @formatter:on
 @FunctionalInterface
 @SuppressWarnings("JavadocDeclaration")
-public interface WarmUpCustomizer extends UnaryOperator<WarmUpBuilder> {}
+public interface WarmUpCustomizer {
+
+    // Sonar wants a dedicated exception type, but we don't know what implementations might throw
+    @SuppressWarnings("java:S112")
+    WarmUpBuilder apply(WarmUpBuilder builder) throws Exception;
+}

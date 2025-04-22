@@ -50,7 +50,7 @@ class WarmUpFactoryTest {
     private WarmUpFactory factory;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         factory = new WarmUpFactory(context, httpClientBuilder);
         lenient()
                 .when(context.getBeansOfType(WarmUpCustomizer.class))
@@ -62,7 +62,7 @@ class WarmUpFactoryTest {
     }
 
     @Test
-    void getSettings() {
+    void getSettings() throws Exception {
         final var settings = factory.getSettings(List.of(initializer1, initializer2));
 
         final var inOrder = inOrder(customizer1, customizer2, initializer1, initializer2);
@@ -77,7 +77,7 @@ class WarmUpFactoryTest {
     }
 
     @Test
-    void getSettings_onlyInitializesOnce() {
+    void getSettings_onlyInitializesOnce() throws Exception {
         final var settings1 = factory.getSettings(List.of(initializer1, initializer2));
         final var settings2 = factory.getSettings(List.of(initializer1, initializer2));
 

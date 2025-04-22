@@ -52,7 +52,8 @@ class WarmUpReadinessIndicatorTest {
 
     @ParameterizedTest
     @MethodSource("getStateParams")
-    void getState(final boolean isUp, final boolean enableReadinessIndicator, final AvailabilityState expected) {
+    void getState(final boolean isUp, final boolean enableReadinessIndicator, final AvailabilityState expected)
+            throws Exception {
         when(factory.getSettings(List.of(initializer))).thenReturn(settings);
         lenient().when(warmUpRunner.isWarmedUp()).thenReturn(isUp);
         lenient().when(settings.enableReadinessIndicator()).thenReturn(enableReadinessIndicator);

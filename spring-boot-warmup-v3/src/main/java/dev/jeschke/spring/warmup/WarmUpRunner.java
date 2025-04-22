@@ -4,11 +4,13 @@ import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WarmUpRunner {
@@ -20,8 +22,12 @@ public class WarmUpRunner {
     @Async
     @EventListener
     public void onContextRefreshed(final ContextRefreshedEvent ignoredEvent) {
-        final var settings = factory.getSettings(initializers);
-        initializers.forEach(initializer -> initializer.warmUp(settings));
+        try {
+            final var settings = factory.getSettings(initializers);
+            initializers.forEach(initializer -> initializer.warmUp(settings));
+        } catch (final Exception e) {
+            log.error("Could not execute warm up steps", e);
+        }
         done.set(true);
     }
 

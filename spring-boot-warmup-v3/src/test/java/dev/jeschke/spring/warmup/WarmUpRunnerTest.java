@@ -34,7 +34,7 @@ class WarmUpRunnerTest {
     private WarmUpRunner warmUpRunner;
 
     @BeforeEach
-    void init() {
+    void setUp() throws Exception {
         warmUpRunner = new WarmUpRunner(List.of(initializer1, initializer2), factory);
         when(factory.getSettings(List.of(initializer1, initializer2))).thenReturn(settings);
     }
