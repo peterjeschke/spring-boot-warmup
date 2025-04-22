@@ -32,7 +32,14 @@ public class WarmUpReadinessIndicator extends ReadinessStateHealthIndicator {
 
     @Override
     protected AvailabilityState getState(final ApplicationAvailability applicationAvailability) {
-        final var settings = factory.getSettings(initializers);
-        return !warmUpRunner.isWarmedUp() && settings.enableReadinessIndicator() ? REFUSING_TRAFFIC : ACCEPTING_TRAFFIC;
+        try {
+            final var settings = factory.getSettings(initializers);
+            return !warmUpRunner.isWarmedUp() && settings.enableReadinessIndicator()
+                    ? REFUSING_TRAFFIC
+                    : ACCEPTING_TRAFFIC;
+        } catch (final Exception e) {
+            // Don't log here, this method might be called often. The error will be logged somewhere else
+            return ACCEPTING_TRAFFIC;
+        }
     }
 }

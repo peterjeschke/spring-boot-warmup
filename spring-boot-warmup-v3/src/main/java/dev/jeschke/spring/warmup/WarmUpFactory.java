@@ -22,12 +22,20 @@ public class WarmUpFactory {
     @Name("defaultWarmUpHttpClient")
     private final HttpClient.Builder defaultWarmUpHttpClient;
 
-    private final AtomicReference<WarmUpSettings> cachedSettings = new AtomicReference<>();
+    private final AtomicReference<Result<WarmUpSettings>> cachedSettings = new AtomicReference<>();
     private final AtomicReference<RestClient> cachedRestClient = new AtomicReference<>();
 
-    public WarmUpSettings getSettings(final List<WarmUpInitializer> initializers) {
-        return cachedSettings.updateAndGet(
+    // Remove once we have something better for the unreachable code
+    @SuppressWarnings("java:S112")
+    public WarmUpSettings getSettings(final List<WarmUpInitializer> initializers) throws Exception {
+        final var result = cachedSettings.updateAndGet(
                 settings -> requireNonNullElseGet(settings, () -> buildSettings(initializers)));
+        if (result instanceof Result.Success<WarmUpSettings> success) {
+            return success.result();
+        } else if (result instanceof Result.Failure<WarmUpSettings> failure) {
+            throw failure.cause();
+        }
+        throw new RuntimeException("unreachable");
     }
 
     public RestClient getRestClient(final HttpClient httpClient) {
@@ -41,20 +49,32 @@ public class WarmUpFactory {
                 .build();
     }
 
-    private WarmUpSettings buildSettings(final List<WarmUpInitializer> initializers) {
-        var builder = configureCustomizers(context);
-        for (final var initializer : initializers) {
-            builder = initializer.configure(builder);
+    private Result<WarmUpSettings> buildSettings(final List<WarmUpInitializer> initializers) {
+        try {
+            var builder = configureCustomizers(context);
+            for (final var initializer : initializers) {
+                builder = initializer.configure(builder);
+            }
+            return new Result.Success<>(builder.build());
+        } catch (Exception e) {
+            return new Result.Failure<>(e);
         }
-        return builder.build();
     }
-
-    private WarmUpBuilder configureCustomizers(final ApplicationContext applicationContext) {
+    // Sonar complains that Exception is too generic, but that's what we get, so what can we do
+    @SuppressWarnings("java:S112")
+    private WarmUpBuilder configureCustomizers(final ApplicationContext applicationContext) throws Exception {
         WarmUpBuilder result = new WarmUpBuilderImpl(defaultWarmUpHttpClient);
         for (final var customizer :
                 applicationContext.getBeansOfType(WarmUpCustomizer.class).values()) {
             result = customizer.apply(result);
         }
         return result;
+    }
+
+    @SuppressWarnings({"unused", "java:S2326"})
+    private sealed interface Result<T> {
+        record Success<T>(T result) implements Result<T> {}
+
+        record Failure<T>(Exception cause) implements Result<T> {}
     }
 }
