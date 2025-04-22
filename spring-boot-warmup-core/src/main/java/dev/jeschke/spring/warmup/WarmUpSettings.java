@@ -12,4 +12,5 @@ public record WarmUpSettings(
         boolean enableReadinessIndicator,
         String protocol,
         HttpClient httpClient,
-        String hostname) {}
+        String hostname,
+        boolean enableHttpTlsVerification) {}

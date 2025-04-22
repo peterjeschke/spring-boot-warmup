@@ -2,12 +2,16 @@ package dev.jeschke.spring.warmup.builder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
 import java.net.http.HttpClient;
+import java.security.GeneralSecurityException;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class WarmUpBuilderImplTest {
 
     @Mock
+    private HttpClient.Builder defaultHttpClientBuilder;
+
+    @Mock
     private HttpClient defaultHttpClient;
 
     @Mock
@@ -32,7 +39,7 @@ class WarmUpBuilderImplTest {
 
     @BeforeEach
     void setUp() {
-        builder = new WarmUpBuilderImpl(defaultHttpClient);
+        builder = new WarmUpBuilderImpl(defaultHttpClientBuilder);
     }
 
     @ParameterizedTest
@@ -131,6 +138,7 @@ class WarmUpBuilderImplTest {
 
     @Test
     void setHttpClient_default() {
+        when(defaultHttpClientBuilder.build()).thenReturn(defaultHttpClient);
         final var actual = builder.build();
 
         assertThat(actual.httpClient()).isSameAs(defaultHttpClient);
@@ -155,5 +163,33 @@ class WarmUpBuilderImplTest {
         final var actual = builder.setHttpHostname("customName").build();
 
         assertThat(actual.hostname()).isEqualTo("customName");
+    }
+
+    @Test
+    void httpTlsVerification_default() {
+        final var actual = builder.build();
+
+        assertThat(actual.enableHttpTlsVerification()).isTrue();
+    }
+
+    @Test
+    void enableHttpTlsVerification() throws GeneralSecurityException {
+        when(defaultHttpClientBuilder.sslContext(any())).thenReturn(defaultHttpClientBuilder);
+
+        final var actual =
+                builder.enableHttpTlsVerification().enableReadinessIndicator().build();
+
+        verify(defaultHttpClientBuilder).sslContext(any());
+        assertThat(actual.enableHttpTlsVerification()).isTrue();
+    }
+
+    @Test
+    void disableHttpTlsVerification() throws GeneralSecurityException {
+        when(defaultHttpClientBuilder.sslContext(any())).thenReturn(defaultHttpClientBuilder);
+
+        final var actual = builder.disableHttpTlsVerification().build();
+
+        verify(defaultHttpClientBuilder).sslContext(any());
+        assertThat(actual.enableHttpTlsVerification()).isFalse();
     }
 }
