@@ -5,6 +5,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

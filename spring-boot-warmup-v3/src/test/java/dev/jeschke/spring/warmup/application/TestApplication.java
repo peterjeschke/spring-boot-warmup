@@ -6,6 +6,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import dev.jeschke.spring.warmup.ControllerWarmUp;
 import dev.jeschke.spring.warmup.WarmUpConfiguration;
 import dev.jeschke.spring.warmup.WarmUpCustomizer;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Import(WarmUpConfiguration.class)
 public class TestApplication {
     public static final TestRequestBody CUSTOMIZER_TEST_REQUEST_BODY = new TestRequestBody("customizerTestRequestBody");
+    public static final int INIT_CALL_COUNT = 3;
 
     public static void main(final String[] args) {
         SpringApplication.run(TestApplication.class, args);
@@ -35,6 +37,10 @@ public class TestApplication {
             return builder -> builder.addEndpoint("/getByCustomizer")
                     .addEndpoint(
                             POST.name(), "/postByCustomizer", CUSTOMIZER_TEST_REQUEST_BODY, APPLICATION_JSON.toString())
+                    .initializingMultipleTimes(
+                            INIT_CALL_COUNT,
+                            Duration.ofMillis(100),
+                            multipleTimesBuilder -> multipleTimesBuilder.addEndpoint("/getMultipleTimes"))
                     .enableAutomaticMvcWarmUpEndpoint();
         }
     }
@@ -91,6 +97,12 @@ public class TestApplication {
         public String postWithRequestBodyParameter(@RequestBody final InitializedTestRequestBody requestBody) {
             testMock.postWithRequestBodyParameter(requestBody);
             return "postWithRequestBodyParameter";
+        }
+
+        @GetMapping("/getMultipleTimes")
+        public String getMultipleTimes() {
+            testMock.getMultipleTimes();
+            return "getMultipleTimes";
         }
     }
 

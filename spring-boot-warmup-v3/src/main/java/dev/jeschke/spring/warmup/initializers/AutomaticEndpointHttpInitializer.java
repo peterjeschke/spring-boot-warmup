@@ -4,7 +4,7 @@ import static dev.jeschke.spring.warmup.initializers.AutomaticEndpoint.AUTOMATIC
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import dev.jeschke.spring.warmup.WarmUpFactory;
-import dev.jeschke.spring.warmup.WarmUpSettings;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;

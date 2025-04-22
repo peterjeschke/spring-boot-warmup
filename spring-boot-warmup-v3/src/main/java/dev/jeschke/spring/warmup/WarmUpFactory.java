@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNullElseGet;
 
 import dev.jeschke.spring.warmup.builder.WarmUpBuilderImpl;
 import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;

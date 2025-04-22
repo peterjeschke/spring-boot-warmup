@@ -1,11 +1,13 @@
 package dev.jeschke.spring.warmup;
 
 import static dev.jeschke.spring.warmup.application.TestApplication.CUSTOMIZER_TEST_REQUEST_BODY;
+import static dev.jeschke.spring.warmup.application.TestApplication.INIT_CALL_COUNT;
 import static dev.jeschke.spring.warmup.initializers.AutomaticEndpoint.AUTOMATIC_WARM_UP_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.context.bean.override.mockito.MockReset.NONE;
@@ -95,6 +97,11 @@ class ControllerWarmUpAnnotationTest {
     @Test
     void automaticWarmUpEndpoint() {
         assertThat(filter.isHitAutomaticEndpoint()).isTrue();
+    }
+
+    @Test
+    void getMultipleTimes() {
+        verify(testMock, times(INIT_CALL_COUNT)).getMultipleTimes();
     }
 
     private TestRequestBody customizerTestRequestBody() {

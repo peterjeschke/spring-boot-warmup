@@ -4,10 +4,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
-import dev.jeschke.spring.warmup.WarmUpSettings;
+import dev.jeschke.spring.warmup.WarmUpCustomizer;
+import dev.jeschke.spring.warmup.internal.RepeatingWarmUpSettings;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.net.http.HttpClient;
 import java.security.GeneralSecurityException;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -18,10 +22,11 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     private boolean enableAutomaticWarmUpEndpoint = false;
     private boolean enableReadinessIndicator = true;
     private String protocol = "http";
-    private HttpClient httpClient;
+    private HttpClient httpClient = null;
     private HttpClient.Builder defaultHttpClient;
     private String httpHostname = "localhost";
     private boolean enableTlsVerification = true;
+    private final Collection<RepeatingWarmUpSettings> repeatingWarmUpSettings = new ArrayList<>();
 
     public WarmUpBuilderImpl(final HttpClient.Builder defaultHttpClient) {
         this.defaultHttpClient = defaultHttpClient;
@@ -130,6 +135,16 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
     }
 
     @Override
+    public WarmUpBuilder initializingMultipleTimes(
+            final int times, final Duration interval, final WarmUpCustomizer customizer) throws Exception {
+        repeatingWarmUpSettings.add(new RepeatingWarmUpSettings(
+                times,
+                interval,
+                customizer.apply(new WarmUpBuilderImpl(defaultHttpClient)).build()));
+        return this;
+    }
+
+    @Override
     public WarmUpSettings build() {
         final var actualHttpClient = this.httpClient == null ? defaultHttpClient.build() : httpClient;
         return new WarmUpSettings(
@@ -139,6 +154,7 @@ public class WarmUpBuilderImpl implements WarmUpBuilder {
                 protocol,
                 actualHttpClient,
                 httpHostname,
-                enableTlsVerification);
+                enableTlsVerification,
+                repeatingWarmUpSettings);
     }
 }

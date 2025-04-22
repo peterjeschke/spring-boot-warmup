@@ -10,10 +10,14 @@ import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
+import dev.jeschke.spring.warmup.internal.RepeatingWarmUpSettings;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.net.http.HttpClient;
 import java.security.GeneralSecurityException;
+import java.time.Duration;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -191,5 +195,39 @@ class WarmUpBuilderImplTest {
 
         verify(defaultHttpClientBuilder).sslContext(any());
         assertThat(actual.enableHttpTlsVerification()).isFalse();
+    }
+
+    @Test
+    void initializingMultipleTimes_defaultParameterValues() throws Exception {
+        final var actual = builder.initializingMultipleTimes(nestedBuilder -> nestedBuilder)
+                .build();
+
+        assertThat(actual.repeatingWarmUpSettings())
+                .singleElement()
+                .extracting(RepeatingWarmUpSettings::times, RepeatingWarmUpSettings::interval)
+                .containsExactly(5, Duration.ofMillis(500));
+    }
+
+    @Test
+    void initializingMultipleTimes() throws Exception {
+        final var times = 3;
+        final var interval = Duration.ofSeconds(3);
+        final var expectedPath = "/multiplePath";
+
+        final var actual = builder.initializingMultipleTimes(
+                        times, interval, nestedBuilder -> nestedBuilder.addEndpoint(expectedPath))
+                .build();
+
+        assertThat(actual.repeatingWarmUpSettings())
+                .singleElement()
+                .extracting(RepeatingWarmUpSettings::times, RepeatingWarmUpSettings::interval)
+                .containsExactly(times, interval);
+        assertThat(actual.repeatingWarmUpSettings())
+                .singleElement()
+                .extracting(RepeatingWarmUpSettings::settings)
+                .extracting(WarmUpSettings::endpoints, InstanceOfAssertFactories.list(Endpoint.class))
+                .singleElement()
+                .extracting(Endpoint::path)
+                .isEqualTo(expectedPath);
     }
 }

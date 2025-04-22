@@ -8,6 +8,7 @@ import static org.springframework.boot.availability.ReadinessState.ACCEPTING_TRA
 import static org.springframework.boot.availability.ReadinessState.REFUSING_TRAFFIC;
 
 import dev.jeschke.spring.warmup.initializers.WarmUpInitializer;
+import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;

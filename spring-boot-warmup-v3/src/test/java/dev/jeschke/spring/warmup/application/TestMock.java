@@ -3,7 +3,7 @@ package dev.jeschke.spring.warmup.application;
 import org.springframework.stereotype.Component;
 
 @Component
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "java:S1186"})
 public class TestMock {
 
     public void getNoParams() {}
@@ -19,4 +19,6 @@ public class TestMock {
     public void postWithAnnotationRequestBody(final TestRequestBody body) {}
 
     public void postWithRequestBodyParameter(final TestRequestBody body) {}
+
+    public void getMultipleTimes() {}
 }
