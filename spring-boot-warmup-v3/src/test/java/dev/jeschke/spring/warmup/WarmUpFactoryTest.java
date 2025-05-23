@@ -19,6 +19,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.client.RestClient;
 
 @ExtendWith(MockitoExtension.class)
 class WarmUpFactoryTest {
@@ -51,7 +52,7 @@ class WarmUpFactoryTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        factory = new WarmUpFactory(context, httpClientBuilder);
+        factory = new WarmUpFactory(context, httpClientBuilder, RestClient.builder());
         lenient()
                 .when(context.getBeansOfType(WarmUpCustomizer.class))
                 .thenReturn(new TreeMap<>(Map.of("customizer1", customizer1, "customizer2", customizer2)));
