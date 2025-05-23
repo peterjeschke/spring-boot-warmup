@@ -4,8 +4,8 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import dev.jeschke.spring.warmup.ControllerWarmUp;
-import dev.jeschke.spring.warmup.WarmUpConfiguration;
 import dev.jeschke.spring.warmup.WarmUpCustomizer;
+import dev.jeschke.spring.warmup.config.WarmUpConfiguration;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import org.springframework.boot.SpringApplication;

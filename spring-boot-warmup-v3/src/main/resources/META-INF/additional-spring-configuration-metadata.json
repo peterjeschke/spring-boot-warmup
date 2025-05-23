@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "warmup.http.internal.enable-auto-security",
+      "defaultValue": true
+    }
+  ]
+}
