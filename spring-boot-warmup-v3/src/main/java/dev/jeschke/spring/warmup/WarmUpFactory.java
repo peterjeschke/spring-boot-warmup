@@ -23,6 +23,8 @@ public class WarmUpFactory {
     @Name("defaultWarmUpHttpClient")
     private final HttpClient.Builder defaultWarmUpHttpClient;
 
+    private final RestClient.Builder restClientBuilder;
+
     private final AtomicReference<Result<WarmUpSettings>> cachedSettings = new AtomicReference<>();
     private final AtomicReference<RestClient> cachedRestClient = new AtomicReference<>();
 
@@ -45,7 +47,7 @@ public class WarmUpFactory {
     }
 
     private RestClient buildRestClient(final HttpClient httpClient) {
-        return RestClient.builder()
+        return restClientBuilder
                 .requestFactory(new JdkClientHttpRequestFactory(httpClient))
                 .build();
     }
