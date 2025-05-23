@@ -1,32 +1,23 @@
 package dev.jeschke.spring.warmup.initializers;
 
 import static java.util.Objects.requireNonNull;
-import static org.springframework.http.HttpMethod.PATCH;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
 
 import dev.jeschke.spring.warmup.ControllerWarmUp;
 import dev.jeschke.spring.warmup.ControllerWarmUp.DefaultRequestBodyType;
-import dev.jeschke.spring.warmup.Endpoint;
 import dev.jeschke.spring.warmup.WarmUpBuilder;
-import dev.jeschke.spring.warmup.WarmUpFactory;
 import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.method.HandlerMethod;
@@ -39,10 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 public class HttpInitializer implements WarmUpInitializer {
 
     private final ApplicationContext applicationContext;
-
-    private final ServletWebServerApplicationContext webServerContext;
-
-    private final WarmUpFactory warmUpFactory;
+    private final HttpClient httpClient;
 
     @Override
     public WarmUpBuilder configure(final WarmUpBuilder builder) {
@@ -58,7 +46,7 @@ public class HttpInitializer implements WarmUpInitializer {
     @Override
     public void warmUp(final WarmUpSettings configuration) {
         for (final var endpoint : configuration.endpoints()) {
-            callEndpoint(endpoint, configuration);
+            httpClient.callEndpoint(endpoint, configuration);
         }
         for (final var repeating : configuration.repeatingWarmUpSettings()) {
             for (final var endpoint : repeating.settings().endpoints()) {
@@ -66,7 +54,7 @@ public class HttpInitializer implements WarmUpInitializer {
                     callRepeating(
                             repeating.times(),
                             repeating.interval(),
-                            () -> callEndpoint(endpoint, repeating.settings()));
+                            () -> httpClient.callEndpoint(endpoint, repeating.settings()));
                 } catch (final InterruptedException e) {
                     log.warn("Was interrupted. Will stop repeating calls", e);
                     Thread.currentThread().interrupt();
@@ -146,45 +134,5 @@ public class HttpInitializer implements WarmUpInitializer {
                     e);
             return Optional.empty();
         }
-    }
-
-    private void callEndpoint(final Endpoint endpoint, final WarmUpSettings configuration) {
-        final var port = webServerContext.getWebServer().getPort();
-        final var url =
-                "%s://%s:%s/%s".formatted(configuration.protocol(), configuration.hostname(), port, endpoint.path());
-        log.info(
-                "Calling endpoint {} {} with body {} ({})",
-                endpoint.method(),
-                url,
-                endpoint.body(),
-                endpoint.contentType());
-
-        final var method = HttpMethod.valueOf(endpoint.method());
-        var spec = warmUpFactory
-                .getRestClient(configuration.httpClient())
-                .method(method)
-                .uri(url);
-        if (endpoint.body() != null) {
-            spec = spec //
-                    .contentType(MediaType.valueOf(endpoint.contentType())) //
-                    .body(endpoint.body());
-        } else if (expectRequestBody(method)) {
-            log.warn(
-                    "Trying to call endpoint {} with method {} but no body was provided. Call might fail.",
-                    endpoint,
-                    method);
-        }
-        final var statusCode = spec //
-                .retrieve() //
-                .toBodilessEntity() //
-                .getStatusCode();
-
-        if (!statusCode.is2xxSuccessful()) {
-            log.warn("Call to {} with method {} failed. Returned status code {}", url, endpoint.method(), statusCode);
-        }
-    }
-
-    private boolean expectRequestBody(final HttpMethod httpMethod) {
-        return List.of(POST, PUT, PATCH).contains(httpMethod);
     }
 }

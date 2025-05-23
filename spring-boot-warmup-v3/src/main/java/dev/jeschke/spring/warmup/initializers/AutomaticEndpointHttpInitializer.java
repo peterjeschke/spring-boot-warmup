@@ -1,13 +1,14 @@
 package dev.jeschke.spring.warmup.initializers;
 
 import static dev.jeschke.spring.warmup.initializers.AutomaticEndpoint.AUTOMATIC_WARM_UP_ENDPOINT;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import dev.jeschke.spring.warmup.WarmUpFactory;
+import dev.jeschke.spring.warmup.Endpoint;
+import dev.jeschke.spring.warmup.internal.RepeatingWarmUpSettings;
 import dev.jeschke.spring.warmup.internal.WarmUpSettings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -17,22 +18,47 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 public class AutomaticEndpointHttpInitializer implements WarmUpInitializer {
 
     public static final String CONTROLLER_BEAN_NAME = "warmUpAutomaticEndpoint";
-    private final ServletWebServerApplicationContext context;
-    private final WarmUpFactory warmUpFactory;
+    private final GenericApplicationContext context;
+    private final RepeatingInvocation repeatingInvocation;
+    private final HttpClient httpClient;
 
     @Override
     public void warmUp(final WarmUpSettings settings) {
-        if (!settings.enableAutomaticMvcEndpoint()) {
+        final var skipSingleCall = !settings.enableAutomaticMvcEndpoint();
+        final var skipRepeatingCalls = settings.repeatingWarmUpSettings().stream()
+                .map(RepeatingWarmUpSettings::settings)
+                .noneMatch(WarmUpSettings::enableAutomaticMvcEndpoint);
+        if (skipSingleCall && skipRepeatingCalls) {
             return;
         }
 
         context.registerBean(CONTROLLER_BEAN_NAME, AutomaticEndpoint.class);
         reloadControllers();
 
-        callAutomaticEndpoint(settings);
+        try {
+            if (!skipSingleCall) {
+                httpClient.callEndpoint(buildInternalEndpoint(), settings);
+            }
+            for (final var repeatingWarmUpSetting : settings.repeatingWarmUpSettings()) {
+                if (repeatingWarmUpSetting.settings().enableAutomaticMvcEndpoint()) {
+                    repeatingInvocation.invokeRepeating(
+                            repeatingWarmUpSetting.times(),
+                            repeatingWarmUpSetting.interval(),
+                            () -> httpClient.callEndpoint(buildInternalEndpoint(), repeatingWarmUpSetting.settings()));
+                }
+            }
+        } catch (final InterruptedException e) {
+            log.warn("Was interrupted. Will stop repeating calls", e);
+            Thread.currentThread().interrupt();
+        } finally {
+            context.removeBeanDefinition(CONTROLLER_BEAN_NAME);
+            reloadControllers();
+        }
+    }
 
-        context.removeBeanDefinition(CONTROLLER_BEAN_NAME);
-        reloadControllers();
+    private Endpoint buildInternalEndpoint() {
+        return new Endpoint(
+                AUTOMATIC_WARM_UP_ENDPOINT, AutomaticEndpointRequestBody.createDefault(), APPLICATION_JSON_VALUE);
     }
 
     private void reloadControllers() {
@@ -43,24 +69,5 @@ public class AutomaticEndpointHttpInitializer implements WarmUpInitializer {
                     .forEach(requestMappingHandlerMapping::unregisterMapping);
             requestMappingHandlerMapping.afterPropertiesSet();
         });
-    }
-
-    private void callAutomaticEndpoint(final WarmUpSettings settings) {
-        log.info("Calling automatic endpoint");
-        final var port = context.getWebServer().getPort();
-        final var url =
-                "%s://%s:%s/%s".formatted(settings.protocol(), settings.hostname(), port, AUTOMATIC_WARM_UP_ENDPOINT);
-        final var response = warmUpFactory
-                .getRestClient(settings.httpClient())
-                .post()
-                .uri(url)
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .body(AutomaticEndpointRequestBody.createDefault())
-                .retrieve()
-                .toBodilessEntity();
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            log.warn("Warming up automatic endpoint was not successful. Status code: {}", response.getStatusCode());
-        }
     }
 }
