@@ -11,7 +11,7 @@
 
     <properties>
         <spring-boot.version>3.4.5</spring-boot.version>
-        <spring-framework.version>6.2.5</spring-framework.version>
+        <spring-framework.version>6.2.5</spring-framework.version>        <spring-security.version>6.5.0</spring-security.version>
         <jakarta-validation.version>3.1.1</jakarta-validation.version>
     </properties>
 
@@ -50,6 +50,18 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring-framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>${spring-framework.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${spring-framework.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -111,6 +123,11 @@
                         <path>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-autoconfigure-processor</artifactId>
+                            <version>${spring-boot.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
                             <version>${spring-boot.version}</version>
                         </path>
                     </annotationProcessorPaths>

@@ -1,1 +1,2 @@
-dev.jeschke.spring.warmup.WarmUpConfiguration
+dev.jeschke.spring.warmup.config.WarmUpConfiguration
+dev.jeschke.spring.warmup.config.InternalEndpointSecurityConfiguration
